@@ -1,2 +1,2 @@
 # ImageCluster
-cluster algorithm for image
+cluster algorithm for 2d image based on Euclidean distance 

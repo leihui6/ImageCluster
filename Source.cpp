@@ -7,13 +7,13 @@ int main()
 {
 	Mat img = imread("example/photo2.jpg");
 
-	if (!img.data)                              // Check for invalid input
+	if (!img.data)
 	{
 		cout << "Could not open or find the image" << std::endl;
 		return -1;
 	}
 
-	cv::resize(img, img,cv::Size(480,640));
+	//cv::resize(img, img,cv::Size(480,640));
 
 	cout << "width=" << img.cols << " height=" << img.rows << endl;
 	

@@ -14,7 +14,7 @@ ImageCluster::~ImageCluster()
 	delete_pointer(&m_image_data);
 }
 
-int ImageCluster::load_image(unsigned char * _image, size_t _width, size_t _height)
+int ImageCluster::load_image(unsigned char * _image, int _width, int _height)
 {
 	if (!_image)
 	{
@@ -31,7 +31,7 @@ int ImageCluster::load_image(unsigned char * _image, size_t _width, size_t _heig
 	return 0;
 }
 
-int ImageCluster::init_kernel_size(size_t _kernel_width, size_t _kernel_height)
+int ImageCluster::init_kernel_size(int _kernel_width, int _kernel_height)
 {
 	if (!m_image_data)
 	{
@@ -76,7 +76,8 @@ int ImageCluster::cluster()
 		return 1;
 	}
 
-
+	std::vector<int> near_points;
+	get_nearby_points_by_index(4, near_points);
 
 	return 0;
 }
@@ -87,11 +88,11 @@ void ImageCluster::check_kernel_vec()
 	cv::Mat kernel_image(cv::Size(m_width, m_height), CV_8UC1, cv::Scalar::all(0));
 #endif // _DEBUG_
 
-	size_t x = 0, y = 0;
+	int x = 0, y = 0;
 
 	bool is_vaild = false;
 
-	for (size_t i = 0; i < m_kernel_vec.size(); ++i)
+	for (int i = 0; i < m_kernel_vec.size(); ++i)
 	{
 		get_start_point_by_index(i, x, y);
 
@@ -113,13 +114,13 @@ void ImageCluster::check_kernel_vec()
 #endif // _DEBUG_
 }
 
-bool ImageCluster::check_one_kernel(size_t x, size_t y)
+bool ImageCluster::check_one_kernel(int x, int y)
 {
-	size_t tar_i = 0;
+	int tar_i = 0;
 
-	for (size_t j = y; j < y + m_kernel_height; ++j)
+	for (int j = y; j < y + m_kernel_height; ++j)
 	{
-		for (size_t k = x; k < x + m_kernel_width; ++k)
+		for (int k = x; k < x + m_kernel_width; ++k)
 		{
 			tar_i = j * m_width + k;
 
@@ -132,9 +133,9 @@ bool ImageCluster::check_one_kernel(size_t x, size_t y)
 	return false;
 }
 
-void ImageCluster::get_start_point_by_index(size_t _index, size_t &_x, size_t &_y)
+void ImageCluster::get_start_point_by_index(int _index, int &_x, int &_y)
 {
-	size_t
+	int
 		A1 = _index / m_kernel_count_col,
 
 		B1 = _index % m_kernel_count_col;
@@ -144,18 +145,23 @@ void ImageCluster::get_start_point_by_index(size_t _index, size_t &_x, size_t &_
 	_y = A1 * m_kernel_height;
 }
 
-void ImageCluster::get_nearby_points_by_index(size_t _index, std::vector<size_t>& _near_points)
+void ImageCluster::get_nearby_points_by_index(int _index, std::vector<int>& _near_points)
 {
 	_near_points.resize(8);
 	_near_points[0] = _index - m_kernel_count_col - 1;
-	_near_points[1] = _index - m_kernel_count_col - 1;
-	_near_points[2] = _index - m_kernel_count_col - 1;
-	_near_points[3] = _index - m_kernel_count_col - 1;
-	//_near_points[4] = _index - m_kernel_count_col - 1;
-	_near_points[5] = _index - m_kernel_count_col - 1;
-	_near_points[6] = _index - m_kernel_count_col - 1;
-	_near_points[7] = _index - m_kernel_count_col - 1;
-	_near_points[8] = _index - m_kernel_count_col - 1;
+	_near_points[1] = _index - m_kernel_count_col;
+	_near_points[2] = _index - m_kernel_count_col + 1;
+	_near_points[3] = _index - 1;
+	//_near_points[4] = _index;
+	_near_points[4] = _index + 1;
+	_near_points[5] = _index + m_kernel_count_col - 1;
+	_near_points[6] = _index + m_kernel_count_col;
+	_near_points[7] = _index + m_kernel_count_col + 1;
+
+	for (auto &i : _near_points)
+	{
+		i = (i < 0) ? -1 : i;
+	}
 }
 
 void ImageCluster::delete_pointer(unsigned char ** _ptr)

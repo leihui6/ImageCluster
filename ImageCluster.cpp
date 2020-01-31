@@ -214,6 +214,11 @@ void ImageCluster::get_start_point_by_index(int _index, int &_x, int &_y)
 void ImageCluster::get_nearby_points_by_index(int _index, std::vector<int>& _near_points)
 {
 	_near_points.resize(8, -1);
+	/*
+	[0]  [1]  [2]
+	[3] index [4]
+	[5]  [6]  [7]
+	*/
 	_near_points[0] = _index - m_kernel_count_col - 1;
 	_near_points[1] = _index - m_kernel_count_col;
 	_near_points[2] = _index - m_kernel_count_col + 1;
@@ -224,9 +229,29 @@ void ImageCluster::get_nearby_points_by_index(int _index, std::vector<int>& _nea
 	_near_points[6] = _index + m_kernel_count_col;
 	_near_points[7] = _index + m_kernel_count_col + 1;
 
+	// the index of point at left side 
+	if (_index % m_kernel_count_col == 0)
+	{
+		_near_points[0] = - 1;
+		_near_points[3] = - 1;
+		_near_points[5] = - 1;
+	}
+	// the index of point at right side 
+	else if ((_index + 1) % m_kernel_count_col == 0)
+	{
+		_near_points[2] = -1;
+		_near_points[4] = -1;
+		_near_points[7] = -1;
+	}
+
+	int all_kernel_size = m_kernel_count_col * m_kernel_count_row;
+
+	// filter the top and bottom index
 	for (auto &i : _near_points)
 	{
 		i = (i < 0) ? -1 : i;
+
+		i = (i > all_kernel_size) ? -1 : i;
 	}
 }
 
@@ -234,7 +259,7 @@ void ImageCluster::get_center_of_clusters()
 {
 	for (int i = 0; i < m_total_cluster.size(); ++i)
 	{
-		size_t t_x = 0, t_y = 0;
+		int t_x = 0, t_y = 0;
 
 		int avg_x = 0, avg_y = 0;
 
@@ -244,9 +269,9 @@ void ImageCluster::get_center_of_clusters()
 			
 			t_y += m_total_cluster[i][j].y;
 		}
-		avg_x = t_x / m_total_cluster[i].size();
+		avg_x = t_x / (int)m_total_cluster[i].size();
 		
-		avg_y = t_y / m_total_cluster[i].size();
+		avg_y = t_y / (int)m_total_cluster[i].size();
 
 		m_center_cluster.push_back(cv::Point2i(avg_x, avg_y));
 	}

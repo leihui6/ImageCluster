@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <deque>
 #include <iostream>
 #include <string>
 #include <opencv2\opencv.hpp>
@@ -38,6 +39,15 @@ private:
 	// get the neighbor points index by index, and the neighbor size is always 8.
 	void get_nearby_points_by_index(int _index, std::vector<int>& _near_points);
 
+	// calculate the point of every cluster
+	void get_center_of_clusters();
+
+	// convert kernel cluster into pixel cluster
+	void convert_kernel_cluster();
+
+	// collect pixel from kernels
+	void collect_pixels(int _x, int _y, std::vector<cv::Point2i> & _cluster);
+
 	// delete pointer safely
 	void delete_pointer(unsigned char ** _ptr);
 
@@ -56,9 +66,20 @@ private:
 
 	int m_kernel_count_row;
 
+	// the kernel array, it will be scaned to set true or false which means if it contains vaild points
 	std::vector<bool> m_kernel_vec;
 
-	// the visited array, all marked false first
+	// the visited array, all marked false initially
 	std::vector<bool> m_visited_vec;
+
+	// the total cluster which contains the single cluster. !!But kernels.
+	std::vector <std::vector<int>> m_total_cluster_kernels;
+
+	// the total cluster which contains the single cluster.
+	std::vector <std::vector<cv::Point2i>> m_total_cluster;
+
+	// the center point of every cluster
+	std::vector< cv::Point2i> m_center_cluster;
+
 };
 

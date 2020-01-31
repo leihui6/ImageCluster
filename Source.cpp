@@ -5,7 +5,7 @@ using namespace std;
 
 int main()
 {
-	Mat img = imread("example/photo2.jpg");
+	Mat img = imread("sample/photo2.jpg");
 
 	if (!img.data)
 	{
@@ -13,7 +13,7 @@ int main()
 		return -1;
 	}
 
-	//cv::resize(img, img,cv::Size(480,640));
+	cv::resize(img, img,cv::Size(480,640));
 
 	cout << "width=" << img.cols << " height=" << img.rows << endl;
 	

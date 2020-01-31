@@ -101,7 +101,9 @@ void ImageCluster::check_kernel_vec()
 		{
 			m_kernel_vec[i] = is_vaild;
 
+#ifdef _DEBUG_
 			kernel_image.at<uchar>(y, x) = 255;
+#endif // _DEBUG_
 		}
 
 	}

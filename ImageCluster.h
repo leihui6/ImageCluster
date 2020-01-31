@@ -23,7 +23,7 @@ public:
 	int init_kernel_size(int kernel_width, int kernel_height);
 
 	// run the cluster task
-	int cluster();
+	int cluster(int _threshold);
 
 private:
 	
@@ -43,10 +43,12 @@ private:
 	void get_center_of_clusters();
 
 	// convert kernel cluster into pixel cluster
-	void convert_kernel_cluster();
+	void convert_kernel_cluster(int _threshold);
 
 	// collect pixel from kernels
 	void collect_pixels(int _x, int _y, std::vector<cv::Point2i> & _cluster);
+
+	void min_max_points_vec(cv::Point2i & _p1, cv::Point2i &_p2, std::vector<cv::Point2i> & points_vec);
 
 	// delete pointer safely
 	void delete_pointer(unsigned char ** _ptr);

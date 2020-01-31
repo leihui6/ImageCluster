@@ -31,9 +31,9 @@ int main()
 	
 	image_cluster.load_image(img_bin.data,img_bin.cols,img_bin.rows);
 
-	image_cluster.init_kernel_size(4, 4);
+	image_cluster.init_kernel_size(2, 2);
 
-	image_cluster.cluster();
+	image_cluster.cluster(20);
 
 	return 1;
 }

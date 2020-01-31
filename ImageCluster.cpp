@@ -114,6 +114,12 @@ int ImageCluster::cluster(int _threshold)
 
 			get_nearby_points_by_index(tar_i, near_points);
 
+//#ifdef _DEBUG_
+//			for (auto i : near_points)
+//				std::cout << i << " ";
+//			std::cout << std::endl;
+//#endif // _DEBUG_
+
 			for (auto j : near_points)
 			{
 				if (j != -1 && m_kernel_vec[j] && !m_visited_vec[j])
@@ -251,7 +257,7 @@ void ImageCluster::get_nearby_points_by_index(int _index, std::vector<int>& _nea
 	{
 		i = (i < 0) ? -1 : i;
 
-		i = (i > all_kernel_size) ? -1 : i;
+		i = (i >= all_kernel_size) ? -1 : i;
 	}
 }
 

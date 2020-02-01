@@ -8,7 +8,7 @@ using namespace std;
 
 int main()
 {
-	Mat img = imread("sample/photo1.jpg");
+	Mat img = imread("sample/special_test.jpg");
 
 	if (!img.data)
 	{
@@ -71,7 +71,7 @@ int main()
 		std::cout << "i=" << i << " pixel size=" << cluster_pixels.size() << " angle=" << angle << std::endl;
 	}
 
-	// 
+	// get every cluster from total_cluster
 	for (int i = 0; i < total_clusters.size(); ++i)
 	{
 		total_clusters[i].get_cluster_pixels(cluster_pixels);
@@ -111,7 +111,7 @@ int main()
 		cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
 
 		// draw the serial number of cluster
-		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar::all(0));
+		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
 	}
 
 	cv::imshow("cluster_image", cluster_image);

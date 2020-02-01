@@ -1,10 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <deque>
-#include <iostream>
-#include <string>
-#include <opencv2\opencv.hpp>
+#include "ImageCluserHeader.h"
+
+#include "Cluster.h"
 
 #define _DEBUG_
 
@@ -23,6 +21,9 @@ public:
 	int init_kernel_size(int kernel_width, int kernel_height);
 
 	// run the cluster task
+	/*
+	\param[in] _threshold limitation of cluster size
+	*/
 	int cluster(int _threshold);
 
 private:
@@ -39,16 +40,11 @@ private:
 	// get the neighbor points index by index, and the neighbor size is always 8.
 	void get_nearby_points_by_index(int _index, std::vector<int>& _near_points);
 
-	// calculate the point of every cluster
-	void get_center_of_clusters();
-
 	// convert kernel cluster into pixel cluster
 	void convert_kernel_cluster(int _threshold);
 
 	// collect pixel from kernels
 	void collect_pixels(int _x, int _y, std::vector<cv::Point2i> & _cluster);
-
-	void min_max_points_vec(cv::Point2i & _p1, cv::Point2i &_p2, std::vector<cv::Point2i> & points_vec);
 
 	// delete pointer safely
 	void delete_pointer(unsigned char ** _ptr);
@@ -75,13 +71,10 @@ private:
 	std::vector<bool> m_visited_vec;
 
 	// the total cluster which contains the single cluster. !!But kernels.
-	std::vector <std::vector<int>> m_total_cluster_kernels;
+	std::vector<std::vector<int>> m_total_cluster_kernels;
 
 	// the total cluster which contains the single cluster.
-	std::vector <std::vector<cv::Point2i>> m_total_cluster;
-
-	// the center point of every cluster
-	std::vector< cv::Point2i> m_center_cluster;
+	std::vector<Cluster> m_total_cluster;
 
 };
 

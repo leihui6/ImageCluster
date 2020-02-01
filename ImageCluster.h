@@ -4,7 +4,7 @@
 
 #include "Cluster.h"
 
-#define _DEBUG_
+//#define _IMAGECLUSTER_DEBUG_
 
 // cluster of image
 class ImageCluster
@@ -25,6 +25,8 @@ public:
 	\param[in] _threshold limitation of cluster size
 	*/
 	int cluster(int _threshold);
+
+	void get_clusters(std::vector<Cluster> & _total_clusters);
 
 private:
 	
@@ -51,7 +53,7 @@ private:
 
 private:
 	unsigned char * m_image_data;
-
+	
 	int m_width;
 
 	int m_height;
@@ -74,7 +76,7 @@ private:
 	std::vector<std::vector<int>> m_total_cluster_kernels;
 
 	// the total cluster which contains the single cluster.
-	std::vector<Cluster> m_total_cluster;
+	std::vector<Cluster> m_total_clusters;
 
 };
 

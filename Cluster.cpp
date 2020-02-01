@@ -36,6 +36,11 @@ void Cluster::get_min_box(std::vector<cv::Point2i> &_min_box_rect)
 	_min_box_rect = m_min_box_rect;
 }
 
+void Cluster::get_middle_points_of_lines(std::vector<cv::Point2i>& _m_min_box_middle_p)
+{
+	_m_min_box_middle_p = m_min_box_middle_p;
+}
+
 void Cluster::get_center_point(cv::Point2i & _p)
 {
 	_p = m_center_point;
@@ -84,6 +89,20 @@ void Cluster::min_box_rect(std::vector<cv::Point2i>& _points_vec)
 	m_center_point = cv::Point2i(minRect.center.x, minRect.center.y);
 
 	m_angle = minRect.angle;
+
+	if (minRect.size.width < minRect.size.height)
+	{
+		m_angle = 90 + m_angle;
+	}
+
+	int n_i = 0;
+
+	m_min_box_middle_p.resize(4);
+
+	for (int i = 0; i < 4; ++i)
+	{
+		m_min_box_middle_p[i] = cv::Point2i((vertex[i].x + vertex[(i + 1) % 4].x) / 2, (vertex[i].y + vertex[(i + 1) % 4].y) / 2);
+	}
 }
 
 void Cluster::cetner_point_of_cluster(std::vector<cv::Point2i> & _points_vec)

@@ -55,11 +55,11 @@ int ImageCluster::init_kernel_size(int _kernel_width, int _kernel_height)
 
 	m_visited_vec.resize(m_kernel_count_col * m_kernel_count_row, false);
 
-#ifdef _DEBUG_
+#ifdef _IMAGECLUSTER_DEBUG_
 
 	std::cout << "Created kernel size=" << m_kernel_vec.size() << " " << std::endl;
 
-#endif // _DEBUG_
+#endif // _IMAGECLUSTER_DEBUG_
 
 	check_kernel_vec();
 
@@ -114,11 +114,11 @@ int ImageCluster::cluster(int _threshold)
 
 			get_nearby_points_by_index(tar_i, near_points);
 
-//#ifdef _DEBUG_
+//#ifdef _IMAGECLUSTER_DEBUG_
 //			for (auto i : near_points)
 //				std::cout << i << " ";
 //			std::cout << std::endl;
-//#endif // _DEBUG_
+//#endif // _IMAGECLUSTER_DEBUG_
 
 			for (auto j : near_points)
 			{
@@ -138,27 +138,29 @@ int ImageCluster::cluster(int _threshold)
 		collect_index_vec.clear();
 	}
 
-#ifdef _DEBUG_
+#ifdef _IMAGECLUSTER_DEBUG_
 	for (int i = 0; i < m_total_cluster_kernels.size(); ++i)
 	{
 		std::cout << "i=" << i << " pixel size=" << m_total_cluster_kernels[i].size() << std::endl;
 	}
-#endif // _DEBUG_
+#endif // _IMAGECLUSTER_DEBUG_
 
 	// convert kernel cluster int pixel cluster
 	convert_kernel_cluster(_threshold);
 
-	// get the center point of every cluster
-	//get_center_of_clusters();
-
 	return 0;
+}
+
+void ImageCluster::get_clusters(std::vector<Cluster>& _total_cluster)
+{
+	_total_cluster = m_total_clusters;
 }
 
 void ImageCluster::check_kernel_vec()
 {
-#ifdef _DEBUG_
+#ifdef _IMAGECLUSTER_DEBUG_
 	cv::Mat kernel_image(cv::Size(m_width, m_height), CV_8UC1, cv::Scalar::all(0));
-#endif // _DEBUG_
+#endif // _IMAGECLUSTER_DEBUG_
 
 	int x = 0, y = 0;
 
@@ -174,16 +176,16 @@ void ImageCluster::check_kernel_vec()
 		{
 			m_kernel_vec[i] = is_vaild;
 
-#ifdef _DEBUG_
+#ifdef _IMAGECLUSTER_DEBUG_
 			kernel_image.at<uchar>(y, x) = 255;
-#endif // _DEBUG_
+#endif // _IMAGECLUSTER_DEBUG_
 		}
 
 	}
-#ifdef _DEBUG_
+#ifdef _IMAGECLUSTER_DEBUG_
 	cv::imshow("Check Image Kernel", kernel_image);
 	cv::waitKey(200);
-#endif // _DEBUG_
+#endif // _IMAGECLUSTER_DEBUG_
 }
 
 bool ImageCluster::check_one_kernel(int x, int y)
@@ -261,57 +263,6 @@ void ImageCluster::get_nearby_points_by_index(int _index, std::vector<int>& _nea
 	}
 }
 
-//void ImageCluster::get_center_of_clusters()
-//{
-//	for (int i = 0; i < m_total_cluster.size(); ++i)
-//	{
-//		int t_x = 0, t_y = 0;
-//
-//		int avg_x = 0, avg_y = 0;
-//
-//		for (int j = 0; j < m_total_cluster[i].size(); ++j)
-//		{
-//			t_x += m_total_cluster[i][j].x;
-//			
-//			t_y += m_total_cluster[i][j].y;
-//		}
-//		avg_x = t_x / (int)m_total_cluster[i].size();
-//		
-//		avg_y = t_y / (int)m_total_cluster[i].size();
-//
-//		m_center_cluster.push_back(cv::Point2i(avg_x, avg_y));
-//	}
-//
-//#ifdef _DEBUG_
-//	for (int i = 0; i < m_total_cluster.size(); ++i)
-//	{
-//		std::cout << "i=" << i << " pixel size=" << m_total_cluster[i].size() << std::endl;
-//	}
-//
-//	cv::Mat center_image(cv::Size(m_width, m_height), CV_8UC1, cv::Scalar::all(0));
-//
-//	for (int i = 0; i < m_total_cluster.size(); ++i)
-//	{
-//		for (int j = 0; j < m_total_cluster[i].size(); ++j)
-//		{
-//			center_image.at<uchar>(m_total_cluster[i][j]) = 255;
-//		}
-//	}
-//
-//	for (int i = 0; i < m_center_cluster.size(); ++i)
-//	{
-//		cv::putText(center_image, std::to_string(i), m_center_cluster[i], cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar::all(0));
-//
-//		cv::circle(center_image, m_center_cluster[i], 3, cv::Scalar::all(0),-1);
-//	}
-//
-//	cv::imshow("center_image", center_image);
-//
-//	cv::waitKey();
-//
-//#endif // _DEBUG_
-//}
-
 void ImageCluster::convert_kernel_cluster(int _threshold)
 {
 	for (int i = 0; i < m_total_cluster_kernels.size(); ++i)
@@ -335,71 +286,13 @@ void ImageCluster::convert_kernel_cluster(int _threshold)
 
 			cluster.init_cluster(cluster_pixels);
 			
-			m_total_cluster.push_back(cluster);
+			m_total_clusters.push_back(cluster);
 		}
 		else
 		{
 			std::cerr << "[warning] one cluster's pixel is less than" <<  _threshold << ", size=" << cluster_pixels.size() << std::endl;
 		}
 	}
-
-#ifdef _DEBUG_
-
-	cv::Mat cluster_image(cv::Size(m_width, m_height), CV_8UC1, cv::Scalar::all(0));
-
-	std::vector<cv::Point2i> cluster_pixels, min_box_rect;
-	
-	cv::Point2i p1, p2, cp;
-
-	float angle = 0.0;
-
-	for (int i = 0; i < m_total_cluster.size(); ++i)
-	{
-		m_total_cluster[i].get_cluster_pixels(cluster_pixels);
-
-		m_total_cluster[i].get_angle(angle);
-
-		std::cout << "i=" << i << " pixel size=" << cluster_pixels.size() << " angle=" << angle << std::endl;
-	}
-
-	for (int i = 0; i < m_total_cluster.size(); ++i)
-	{
-		m_total_cluster[i].get_cluster_pixels(cluster_pixels);
-		
-		m_total_cluster[i].get_min_box(min_box_rect);
-
-		// draw the cluster
-		for (int j = 0; j < cluster_pixels.size(); ++j)
-		{
-			cluster_image.at<uchar>(cluster_pixels[j]) = 255;
-		}
-
-		// draw the minimum box of cluster
-		for (int i = 0; i < 4; i++)
-		{
-			line(cluster_image, min_box_rect[i], min_box_rect[(i + 1) % 4], cv::Scalar::all(255));
-		}
-
-		m_total_cluster[i].get_max_box(p1, p2);
-
-		m_total_cluster[i].get_center_point(cp);
-
-		// draw the maximum box of cluster
-		cv::rectangle(cluster_image, cv::Rect(p1, p2), cv::Scalar::all(255), 1);
-
-		// draw the center point of cluster
-		cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
-		
-		// draw the serial number of cluster
-		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar::all(0));
-	}
-
-	cv::imshow("cluster_image", cluster_image);
-
-	cv::waitKey();
-
-#endif // _DEBUG_
-
 }
 
 void ImageCluster::collect_pixels(int _x, int _y, std::vector<cv::Point2i>& _cluster)

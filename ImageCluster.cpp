@@ -158,6 +158,17 @@ void ImageCluster::get_clusters(std::vector<Cluster>& _total_cluster)
 	_total_cluster = m_total_clusters;
 }
 
+void ImageCluster::clear()
+{
+	m_kernel_vec.clear();
+
+	m_visited_vec.clear();
+
+	m_total_cluster_kernels.clear();
+
+	m_total_clusters.clear();
+}
+
 void ImageCluster::check_kernel_vec()
 {
 #ifdef _IMAGECLUSTER_DEBUG_

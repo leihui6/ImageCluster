@@ -28,6 +28,8 @@ public:
 
 	void get_clusters(std::vector<Cluster> & _total_clusters);
 
+	void clear();
+
 private:
 	
 	//check the kernel box

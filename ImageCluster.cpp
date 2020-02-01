@@ -48,7 +48,7 @@ int ImageCluster::init_kernel_size(int _kernel_width, int _kernel_height)
 		m_kernel_count_row < (double)m_height / _kernel_height
 		)
 	{
-		std::cerr << "[warning]" << "kernel's count on row or col is not a integer" << std::endl;
+		std::cerr << "[warning]" << "kernel count on row or col is not a integer" << std::endl;
 	}
 
 	m_kernel_vec.resize(m_kernel_count_col * m_kernel_count_row, false);
@@ -292,7 +292,7 @@ void ImageCluster::convert_kernel_cluster(int _threshold)
 		}
 		else
 		{
-			std::cerr << "[warning] one cluster's pixels are less than " <<  _threshold << ", size= " << cluster_pixels.size() << std::endl;
+			std::cerr << "[warning] one cluster's pixel is less than" <<  _threshold << ", size=" << cluster_pixels.size() << std::endl;
 		}
 	}
 }

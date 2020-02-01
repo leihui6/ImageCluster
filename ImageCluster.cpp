@@ -68,6 +68,7 @@ int ImageCluster::init_kernel_size(int _kernel_width, int _kernel_height)
 
 int ImageCluster::cluster(int _threshold)
 {
+
 	if (!m_image_data)
 	{
 		return 1;
@@ -76,8 +77,7 @@ int ImageCluster::cluster(int _threshold)
 	//std::vector<int> near_points;
 	//get_nearby_points_by_index(4, near_points);
 
-	bool is_visited = false;
-	bool is_vailed = false;
+	bool is_visited = false, is_vailed = false;
 
 	std::deque<int> cluster_index_q;
 
@@ -139,10 +139,12 @@ int ImageCluster::cluster(int _threshold)
 	}
 
 #ifdef _IMAGECLUSTER_DEBUG_
+	
 	for (int i = 0; i < m_total_cluster_kernels.size(); ++i)
 	{
 		std::cout << "i=" << i << " pixel size=" << m_total_cluster_kernels[i].size() << std::endl;
 	}
+
 #endif // _IMAGECLUSTER_DEBUG_
 
 	// convert kernel cluster int pixel cluster

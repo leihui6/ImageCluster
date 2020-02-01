@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <ctime>
 #include <deque>
 #include <iostream>
 #include <string>

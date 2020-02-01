@@ -35,11 +35,15 @@ int main()
 
 	ImageCluster image_cluster;
 	
+	clock_t begin_time = clock();
+
 	image_cluster.load_image(img_bin.data,img_bin.cols,img_bin.rows);
 
-	image_cluster.init_kernel_size(4, 6);
+	image_cluster.init_kernel_size(8, 12);
 
 	image_cluster.cluster(20);
+
+	std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
 
 #ifdef _MAIN_DEBUG_
 

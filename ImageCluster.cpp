@@ -160,6 +160,8 @@ void ImageCluster::get_clusters(std::vector<Cluster>& _total_cluster)
 
 void ImageCluster::clear()
 {
+	delete_pointer(&m_image_data);
+
 	m_kernel_vec.clear();
 
 	m_visited_vec.clear();
@@ -303,7 +305,7 @@ void ImageCluster::convert_kernel_cluster(int _threshold)
 		}
 		else
 		{
-			std::cerr << "[warning] one cluster's pixel are less than" <<  _threshold << ", size= " << cluster_pixels.size() << std::endl;
+			std::cerr << "[warning] one cluster's pixel are less than " <<  _threshold << ", size= " << cluster_pixels.size() << std::endl;
 		}
 	}
 }

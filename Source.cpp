@@ -2,9 +2,9 @@
 
 #define _MAIN_DEBUG_
 
-//#define _LOCAL_DEBUG_
+#define _LOCAL_DEBUG_
 
-#define _ONLINE_DEBUG_
+//#define _ONLINE_DEBUG_
 
 using namespace cv;
 
@@ -51,7 +51,7 @@ int main()
 
 		image_cluster.init_kernel_size(8, 12);
 
-		image_cluster.cluster(20);
+		image_cluster.cluster(0);
 
 		std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
 
@@ -73,7 +73,6 @@ int main()
 		//for (int i = 0; i < total_clusters.size(); ++i)
 		//{
 		//	total_clusters[i].get_angle(angle);
-
 		//	std::cout << "i=" << i << " pixel size=" << cluster_pixels.size() << " angle=" << angle << std::endl;
 		//}
 
@@ -85,6 +84,10 @@ int main()
 			total_clusters[i].get_min_box(min_box_rect);
 
 			total_clusters[i].get_middle_points_of_lines(middle_points_of_lines);
+
+			total_clusters[i].get_max_box(p1, p2);
+
+			total_clusters[i].get_center_point(cp);
 
 			// draw the cluster
 			for (int j = 0; j < cluster_pixels.size(); ++j)
@@ -106,10 +109,6 @@ int main()
 				cv::circle(cluster_image, middle_points_of_lines[j], 5, cv::Scalar(0, 0, 255));
 			}
 
-			total_clusters[i].get_max_box(p1, p2);
-
-			total_clusters[i].get_center_point(cp);
-
 			// draw the maximum box of cluster
 			cv::rectangle(cluster_image, cv::Rect(p1, p2), cv::Scalar::all(255), 1);
 
@@ -129,7 +128,6 @@ int main()
 		cv::waitKey(33);
 
 		image_cluster.clear();
-
 	}
 #endif // _ONLINE_DEBUG_
 
@@ -151,15 +149,9 @@ int main()
 	
 	cv::cvtColor(img, img_bin, COLOR_RGB2GRAY);
 
-	// cv::equalizeHist(img, img);
-
 	cv::threshold(img_bin, img_bin, 125, 255, cv::THRESH_OTSU);
 
 	bitwise_not(img_bin, img_bin);
-
-	imshow("original image", img);
-
-	imshow("gray image", img_bin);
 
 	ImageCluster image_cluster;
 	
@@ -169,7 +161,7 @@ int main()
 
 	image_cluster.init_kernel_size(8, 12);
 
-	image_cluster.cluster(20);
+	image_cluster.cluster(10);
 
 	std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
 
@@ -239,6 +231,10 @@ int main()
 		// draw the serial number of cluster
 		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
 	}
+
+	cv::imshow("original image", img);
+
+	cv::imshow("gray image", img_bin);
 
 	cv::imshow("cluster_image", cluster_image);
 

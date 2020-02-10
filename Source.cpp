@@ -48,7 +48,7 @@ int main()
 			return 0;
 		}
 
-		background_removal(frame, img_removed_bg, 255, 255, 255, 250.0);
+		background_removal(frame, img_removed_bg, 255, 0, 0, 250.0);
 
 		cv::cvtColor(img_removed_bg, img_bin, COLOR_RGB2GRAY);
 
@@ -152,7 +152,7 @@ int main()
 
 #ifdef _LOCAL_DEBUG_
 
-	cv::Mat img = cv::imread("sample/photo2.jpg");
+	cv::Mat img = cv::imread("sample/special_test.jpg");
 
 	//Mat background = imread("sample/background.jpg");
 	//img = img - background;
@@ -163,14 +163,13 @@ int main()
 		return -1;
 	}
 
-	Mat img_removed_bg;
+	cv::resize(img, img, cv::Size(480, 640));
+
+	Mat img_removed_bg(cv::Size(img.cols, img.rows), CV_8UC3);
 
 	Mat img_bin(cv::Size(img.cols, img.rows), CV_8UC1);
 
-	background_removal(img, img_removed_bg, 255, 255, 255, 200.0);
-
-	cv::resize(img, img, cv::Size(480, 640));
-	cv::resize(img_removed_bg, img_removed_bg, cv::Size(480, 640));
+	background_removal(img, img_removed_bg, 255, 0, 0, 150);
 
 	std::cout << "width=" << img_removed_bg.cols << " height=" << img_removed_bg.rows << std::endl;
 	
@@ -192,9 +191,9 @@ int main()
 
 	image_cluster.load_image(img_bin.data,img_bin.cols,img_bin.rows);
 
-	image_cluster.init_kernel_size(8, 16);
+	image_cluster.init_kernel_size(3, 3);
 
-	image_cluster.cluster(10);
+	image_cluster.cluster(30);
 
 	std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
 
@@ -292,8 +291,10 @@ void background_removal(cv::Mat & _img, cv::Mat & _res_img, int _r, int _g, int 
 			b = c[0];
 			g = c[1];
 			r = c[2];
+			
 			//cout << (sqrt((b - _b)*(b - _b) + (_g - g)*(_g - g) + (_r - r)*(_r - r))) <<endl;
-			if ((sqrt((b - _b)*(b - _b) + (_g - g)*(_g - g) + (_r - r)*(_r - r))) < _threshold)
+			
+			if ((sqrt((b - _b)*(b - _b) + (_g - g)*(_g - g) + (_r - r)*(_r - r))) < (_threshold))
 			{
 				c2[0] = 255;
 				c2[1] = 255;

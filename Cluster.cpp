@@ -86,7 +86,7 @@ void Cluster::min_box_rect(std::vector<cv::Point2i>& _points_vec)
 
 	m_min_box_rect.assign(vertex, vertex + 4);
 
-	m_center_point = cv::Point2i(minRect.center.x, minRect.center.y);
+	m_center_point = cv::Point2i((int)minRect.center.x, (int)minRect.center.y);
 
 	m_angle = minRect.angle;
 
@@ -101,7 +101,7 @@ void Cluster::min_box_rect(std::vector<cv::Point2i>& _points_vec)
 
 	for (int i = 0; i < 4; ++i)
 	{
-		m_min_box_middle_p[i] = cv::Point2i((vertex[i].x + vertex[(i + 1) % 4].x) / 2, (vertex[i].y + vertex[(i + 1) % 4].y) / 2);
+		m_min_box_middle_p[i] = cv::Point2i((int)(vertex[i].x + vertex[(i + 1) % 4].x) / 2, (int)(vertex[i].y + vertex[(i + 1) % 4].y) / 2);
 	}
 }
 

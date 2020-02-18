@@ -1,4 +1,5 @@
 #include "ImageCluster.h"
+#include "PinDetection.h"
 
 #define _MAIN_DEBUG_
 
@@ -152,7 +153,7 @@ int main()
 
 #ifdef _LOCAL_DEBUG_
 
-	cv::Mat img = cv::imread("sample/special_test.jpg");
+	cv::Mat img = cv::imread("sample/photo3.jpg");
 
 	//Mat background = imread("sample/background.jpg");
 	//img = img - background;
@@ -169,7 +170,7 @@ int main()
 
 	Mat img_bin(cv::Size(img.cols, img.rows), CV_8UC1);
 
-	background_removal(img, img_removed_bg, 255, 0, 0, 150);
+	background_removal(img, img_removed_bg, 255, 0, 0, 200);
 
 	std::cout << "width=" << img_removed_bg.cols << " height=" << img_removed_bg.rows << std::endl;
 	
@@ -187,6 +188,8 @@ int main()
 
 	ImageCluster image_cluster;
 	
+	PinDetection pin_detection;
+
 	clock_t begin_time = clock();
 
 	image_cluster.load_image(img_bin.data,img_bin.cols,img_bin.rows);
@@ -226,9 +229,17 @@ int main()
 	{
 		total_clusters[i].get_cluster_pixels(cluster_pixels);
 
+		//cv::Mat img_cluster;
+		//get_image_from_specific_indices(img_cluster, cluster_pixels, img);
+
 		total_clusters[i].get_min_box(min_box_rect);
 
+		total_clusters[i].get_max_box(p1, p2);
+
 		total_clusters[i].get_middle_points_of_lines(middle_points_of_lines);
+
+		PinDetectionResult pin_detection_result;
+		pin_detection.detect(img, cv::Rect2i(p1, p2), min_box_rect, pin_detection_result);
 
 		// draw the cluster
 		//for (int j = 0; j < cluster_pixels.size(); ++j)
@@ -250,7 +261,6 @@ int main()
 			cv::circle(cluster_image, middle_points_of_lines[j], 5, cv::Scalar(0, 0, 255));
 		}
 
-		total_clusters[i].get_max_box(p1, p2);
 
 		total_clusters[i].get_center_point(cp);
 
@@ -309,3 +319,4 @@ void background_removal(cv::Mat & _img, cv::Mat & _res_img, int _r, int _g, int 
 		}
 	}
 }
+

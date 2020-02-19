@@ -52,7 +52,7 @@ private:
 
 	// delete pointer safely
 	void delete_pointer(unsigned char ** _ptr);
-
+	
 private:
 	unsigned char * m_image_data;
 	

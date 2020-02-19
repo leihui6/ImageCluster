@@ -19,21 +19,28 @@ int Cluster::init_cluster(std::vector<cv::Point2i>& _points_vec)
 	
 	min_box_rect(m_cluster_pixels);
 
-	//cetner_point_of_cluster(m_cluster_pixels);
-
 	return 0;
 }
 
-void Cluster::get_max_box(cv::Point2i & _p1, cv::Point2i & _p2)
+void Cluster::get_max_box(cv::Rect2i & _rect)
 {
-	_p1 = m_max_box_rect[0];
-
-	_p2 = m_max_box_rect[1];
+	_rect = m_max_box_rect;
 }
 
 void Cluster::get_min_box(std::vector<cv::Point2i> &_min_box_rect)
 {
 	_min_box_rect = m_min_box_rect;
+}
+
+void Cluster::get_min_box_size(float & _width, float & _height)
+{
+	_width = m_min_box_width;
+	_height = m_min_box_height;
+}
+
+void Cluster::get_min_box_line_segment_function(std::vector<std::vector<float>>& _line_segment)
+{
+	_line_segment = m_min_box_line_vec;
 }
 
 void Cluster::get_middle_points_of_lines(std::vector<cv::Point2i>& _m_min_box_middle_p)
@@ -71,9 +78,9 @@ void Cluster::max_box_rect(std::vector<cv::Point2i>& _points_vec)
 
 	auto min_max_y = std::minmax_element(y_vec.begin(), y_vec.end());
 
-	m_max_box_rect[0] = cv::Point2i(*min_max_x.first, *min_max_y.first);
-
-	m_max_box_rect[1] = cv::Point2i(*min_max_x.second, *min_max_y.second);
+	m_max_box_rect = cv::Rect2i(
+		cv::Point2i(*min_max_x.first, *min_max_y.first),
+		cv::Point2i(*min_max_x.second, *min_max_y.second));
 }
 
 void Cluster::min_box_rect(std::vector<cv::Point2i>& _points_vec)
@@ -85,6 +92,10 @@ void Cluster::min_box_rect(std::vector<cv::Point2i>& _points_vec)
 	minRect.points(vertex);
 
 	m_min_box_rect.assign(vertex, vertex + 4);
+
+	m_min_box_width = minRect.size.width;
+
+	m_min_box_height = minRect.size.height;
 
 	m_center_point = cv::Point2i((int)minRect.center.x, (int)minRect.center.y);
 
@@ -103,23 +114,26 @@ void Cluster::min_box_rect(std::vector<cv::Point2i>& _points_vec)
 	{
 		m_min_box_middle_p[i] = cv::Point2i((int)(vertex[i].x + vertex[(i + 1) % 4].x) / 2, (int)(vertex[i].y + vertex[(i + 1) % 4].y) / 2);
 	}
-}
 
-void Cluster::cetner_point_of_cluster(std::vector<cv::Point2i> & _points_vec)
-{
-	int t_x = 0, t_y = 0,
-
-		avg_x = 0, avg_y = 0;
-
-	for (auto i: _points_vec)
+	// we could build line segment function without ordered rect point.
+	m_min_box_line_vec.resize(4);
+	float 
+		A = 0.0, B = 0.0, C = 0.0,
+		x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0;
+	for (int i = 0; i < 4; i++)
 	{
-		t_x += i.x;
+		x1 = vertex[i].x;
+		y1 = vertex[i].y;
+		
+		x2 = vertex[(i + 1) % 4].x;
+		y2 = vertex[(i + 1) % 4].y;
 
-		t_y += i.y;
+		A = y2 - y1;
+		B = x1 - x2;
+		C = x2 * y1 - x1 * y2;
+
+		m_min_box_line_vec[i] = std::vector<float>{ A, B, C };
 	}
-	avg_x = t_x / (int)_points_vec.size();
 
-	avg_y = t_y / (int)_points_vec.size();
-
-	m_center_point = cv::Point2i(avg_x, avg_y);
 }
+

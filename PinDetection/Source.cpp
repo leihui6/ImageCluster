@@ -1,4 +1,4 @@
-#include "ImageCluster.h"
+#include "../ImageCluster/ImageCluster.h"
 #include "PinDetection.h"
 
 #define _MAIN_DEBUG_
@@ -170,7 +170,7 @@ int main()
 
 	Mat img_bin(cv::Size(img.cols, img.rows), CV_8UC1);
 
-	background_removal(img, img_removed_bg, 255, 0, 0, 200);
+	background_removal(img, img_removed_bg, 255, 0, 0, 300);
 
 	std::cout << "width=" << img_removed_bg.cols << " height=" << img_removed_bg.rows << std::endl;
 	
@@ -210,7 +210,8 @@ int main()
 
 	image_cluster.get_clusters(total_clusters);
 
-	cv::Point2i p1, p2, cp;
+	cv::Point2i cp;
+	cv::Rect2i max_rect;
 
 	float angle = 0.0;
 
@@ -234,23 +235,13 @@ int main()
 
 		total_clusters[i].get_min_box(min_box_rect);
 
-		total_clusters[i].get_max_box(p1, p2);
+		total_clusters[i].get_max_box(max_rect);
 
 		total_clusters[i].get_middle_points_of_lines(middle_points_of_lines);
 
 		PinDetectionResult pin_detection_result;
-		pin_detection.detect(img, cv::Rect2i(p1, p2), min_box_rect, pin_detection_result);
 
-		// draw the cluster
-		//for (int j = 0; j < cluster_pixels.size(); ++j)
-		//{
-		//	// blue green red
-		//	cv::Vec3b &color = cluster_image.at<cv::Vec3b>(cluster_pixels[j]);
-
-		//	color[0] = 255;
-		//	color[1] = 255;
-		//	color[2] = 255;
-		//}
+		pin_detection.detect(img, total_clusters[i], pin_detection_result);
 
 		for (int j = 0; j < 4; ++j)
 		{
@@ -265,7 +256,7 @@ int main()
 		total_clusters[i].get_center_point(cp);
 
 		// draw the maximum box of cluster
-		cv::rectangle(cluster_image, cv::Rect(p1, p2), cv::Scalar(0, 255, 0), 1);
+		cv::rectangle(cluster_image, max_rect, cv::Scalar(0, 255, 0), 1);
 
 		// draw the center point of cluster
 		cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);

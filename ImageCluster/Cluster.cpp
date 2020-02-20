@@ -38,11 +38,6 @@ void Cluster::get_min_box_size(float & _width, float & _height)
 	_height = m_min_box_height;
 }
 
-void Cluster::get_min_box_line_segment_function(std::vector<std::vector<float>>& _line_segment)
-{
-	_line_segment = m_min_box_line_vec;
-}
-
 void Cluster::get_middle_points_of_lines(std::vector<cv::Point2i>& _m_min_box_middle_p)
 {
 	_m_min_box_middle_p = m_min_box_middle_p;
@@ -114,26 +109,5 @@ void Cluster::min_box_rect(std::vector<cv::Point2i>& _points_vec)
 	{
 		m_min_box_middle_p[i] = cv::Point2i((int)(vertex[i].x + vertex[(i + 1) % 4].x) / 2, (int)(vertex[i].y + vertex[(i + 1) % 4].y) / 2);
 	}
-
-	// we could build line segment function without ordered rect point.
-	m_min_box_line_vec.resize(4);
-	float 
-		A = 0.0, B = 0.0, C = 0.0,
-		x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0;
-	for (int i = 0; i < 4; i++)
-	{
-		x1 = vertex[i].x;
-		y1 = vertex[i].y;
-		
-		x2 = vertex[(i + 1) % 4].x;
-		y2 = vertex[(i + 1) % 4].y;
-
-		A = y2 - y1;
-		B = x1 - x2;
-		C = x2 * y1 - x1 * y2;
-
-		m_min_box_line_vec[i] = std::vector<float>{ A, B, C };
-	}
-
 }
 

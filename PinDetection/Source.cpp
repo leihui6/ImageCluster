@@ -153,7 +153,7 @@ int main()
 
 #ifdef _LOCAL_DEBUG_
 
-	cv::Mat img = cv::imread("sample/photo3.jpg");
+	cv::Mat img = cv::imread("sample/photo4.jpg");
 
 	//Mat background = imread("sample/background.jpg");
 	//img = img - background;
@@ -239,9 +239,13 @@ int main()
 
 		total_clusters[i].get_middle_points_of_lines(middle_points_of_lines);
 
+		begin_time = clock();
+
 		PinDetectionResult pin_detection_result;
 
 		pin_detection.detect(img, total_clusters[i], pin_detection_result);
+		
+		std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
 
 		for (int j = 0; j < 4; ++j)
 		{
@@ -252,7 +256,6 @@ int main()
 			cv::circle(cluster_image, middle_points_of_lines[j], 5, cv::Scalar(0, 0, 255));
 		}
 
-
 		total_clusters[i].get_center_point(cp);
 
 		// draw the maximum box of cluster
@@ -262,7 +265,7 @@ int main()
 		cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
 
 		// draw the serial number of cluster
-		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
+		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(255));
 	}
 
 	cv::imshow("cluster_image", cluster_image);

@@ -11,21 +11,136 @@ PinDetection::~PinDetection()
 void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult & pin_detection_result)
 {
 	std::vector<cv::Point2i> min_rect, points_in_min_box;
-	float min_rect_width = 0.0, min_rect_height = 0.0;
-	std::vector<std::vector<float>> line_segment;
-	// This rect is different from cluster's max rect, this is a max rect of min rect points
-	cv::Rect2i max_rect;
-
 	_cluster.get_min_box(min_rect);
-	_cluster.get_min_box_size(min_rect_width, min_rect_height);
-	_cluster.get_min_box_line_segment_function(line_segment);
-	get_max_box_rect(min_rect, max_rect);
-
-	// Ordering each rect's point
 	order_rect_points(min_rect);
 
-	collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segment, points_in_min_box);
+	/*
+	0-----1 1-----0 3-----2 2-----3
+	|     |	|     |	|     |	|     |
+	|     |	|     |	|     |	|     |
+	|     |	|     |	|     |	|     |
+	3-----2	2-----3	0-----1	1-----0
+	*/
+	float d = ((get_distance(min_rect[1], min_rect[2]) + get_distance(min_rect[0], min_rect[3])) / 2.0f) * (1 / 5.0f);
 
+	cv::Point2i inner_p[4], dir_line;
+	dir_line = cv::Point2i(min_rect[3].x - min_rect[0].x, min_rect[3].y - min_rect[0].y);
+
+	// [0]---0---2---[3]
+	get_point_along_with_distance(min_rect[0], d, inner_p[0], dir_line);
+	get_point_along_with_distance(min_rect[1], d, inner_p[1], dir_line);
+
+	// [1]---1---3---[2]
+	get_point_along_with_distance(min_rect[0], 4 * d, inner_p[2], dir_line);
+	get_point_along_with_distance(min_rect[1], 4 * d, inner_p[3], dir_line);
+
+	std::vector<cv::Point2i> inner_part_vertex[3], inner_part_points[3];
+	cv::Size2f inner_size[3];
+	cv::Rect2f inner_max_rect[3];
+	std::vector<std::vector<float>> inner_line_segments[3];
+
+	/*
+	[2]-----[3]
+	|        |
+	1        2
+	|        |
+	3        0
+	|        |
+	[1]-----[0]
+	*/
+	inner_part_vertex[0] = { min_rect[0],min_rect[1],inner_p[0],inner_p[1] };
+
+	inner_part_vertex[1] = { inner_p[0],inner_p[2],inner_p[1],inner_p[3] };
+
+	inner_part_vertex[2] = { min_rect[2],min_rect[3],inner_p[3],inner_p[2] };
+
+	for (int i = 0; i < 3; ++i)
+	{
+		order_rect_points(inner_part_vertex[i], inner_size[i]);
+
+		get_max_box_rect(inner_part_vertex[i], inner_max_rect[i]);
+
+		get_line_segment_from_points(inner_part_vertex[i], inner_line_segments[i]);
+	}
+
+	float middle_probobility = 0.6;
+	bool middle_is_positive = false;
+	cv::Point2i middle_direction;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		collect_pixels_in_min_box(inner_max_rect[i], inner_size[i].width, inner_size[i].height, inner_line_segments[i], inner_part_points[i]);
+		
+		//for (auto & i : inner_part_points[i])
+		//{
+		//	auto & color = image.at<cv::Vec3b>(i);
+		//	color[0] = 255;
+		//	color[1] = 255;
+		//	color[2] = 0;
+		//}
+		//cv::imshow("test", image);
+		//cv::waitKey(0);
+	}
+
+	detecte_middle_part(image, inner_part_points[1], middle_probobility, middle_is_positive, middle_direction);
+
+	std::cout << middle_is_positive << std::endl;
+	
+	// this needle is not positive.
+	if (!middle_is_positive)
+	{
+		cv::circle(image, middle_direction, 2, cv::Scalar(0, 0, 0), -1);
+
+		cv::imshow("test", image);
+		cv::waitKey(0);
+	}
+	
+	// this needle is positive, and we need to detecte the opening side.
+	if (middle_is_positive)
+	{
+		float pro_1 = 0.0, pro_2 = 0.0;
+		detecte_both_side(image, inner_part_points[0], pro_1);
+		detecte_both_side(image, inner_part_points[2], pro_2);
+
+		cv::Point2i grip_pos[2];
+
+		if (pro_1 > pro_2)
+		{
+			grip_pos[0] = (min_rect[0] + inner_p[0]) / 2;
+			grip_pos[1] = (min_rect[1] + inner_p[1]) / 2;
+		}
+		else
+		{
+			grip_pos[0] = (min_rect[2] + inner_p[3]) / 2;
+			grip_pos[1] = (min_rect[3] + inner_p[2]) / 2;
+		}
+		cv::circle(image, grip_pos[0], 3, cv::Scalar(0, 0, 0), -1);
+		cv::circle(image, grip_pos[1], 3, cv::Scalar(0, 0, 0), -1);
+
+		cv::imshow("test", image);
+		cv::waitKey(0);
+	}
+
+	/*
+	for (int i = 0; i < 4; i++)
+	{
+		cv::circle(image, inner_p[i], 2, cv::Scalar(255, 0, 0), 1);
+		cv::circle(image, min_rect[i], 2, cv::Scalar(255, 0, 0), 1);
+	}
+
+	cv::imshow("test",image);
+	cv::waitKey(0);
+
+	
+
+
+	collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segments, both_side[0]);
+
+	collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segments, both_side[1]);
+
+	collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segments, middle_side);
+	*/
+	//collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segments, points_in_min_box);
 	//for (auto & i: points_in_min_box)
 	//{
 	//	auto & color = image.at<cv::Vec3b>(i);
@@ -35,7 +150,7 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 	//}
 	//cv::imshow("test",image);
 	//cv::waitKey(0);
-
+	/*
 	cv::Point2i p_a, p_b, p_0;
 	p_a = (min_rect[0] + min_rect[1]) / 2;
 	p_b = (min_rect[2] + min_rect[3]) / 2;
@@ -64,7 +179,7 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 		}
 		get_point_along_with_distance(p_a, move_d, detection_p[i], dir_line);
 	}
-
+	*/
 	/*for (int y = pin_region.y; y < pin_region.y + pin_region.height; ++y)
 	{
 		for (int x = pin_region.x; x < pin_region.x + pin_region.width; ++x)
@@ -82,7 +197,7 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 		}
 	}*/
 	//identify_side();
-
+	/*
 	cv::circle(image, p_0, d, cv::Scalar(255, 0, 0), 1);
 	cv::circle(image, p_a, 2, cv::Scalar(255, 0, 0), 1);
 	cv::circle(image, p_b, 2, cv::Scalar(255, 0, 0), 1);
@@ -103,7 +218,7 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 	//}
 	cv::imshow("test", image);
 	cv::waitKey(0);
-
+	*/
 }
 
 float PinDetection::get_distance(cv::Point2i pointO, cv::Point2i pointA)
@@ -116,6 +231,37 @@ float PinDetection::get_distance(cv::Point2i pointO, cv::Point2i pointA)
 float PinDetection::get_distance_point_to_line(cv::Point2i & p, float a, float b, float c)
 {
 	return abs(a * p.x + b * p.y + c) / sqrt(a*a + b * b);
+}
+
+void PinDetection::order_rect_points(std::vector<cv::Point2i>& rect, cv::Size2f & rect_size)
+{
+	std::vector<cv::Point2i> ordered_rect;
+	ordered_rect.push_back(rect.back());
+	rect.pop_back();
+
+	while (!rect.empty())
+	{
+		int min_i = -1;
+		float dis = FLT_MAX, d = 0.0;
+		for (int i = 0; i < rect.size(); ++i)
+		{
+			d = get_distance(rect[i], ordered_rect.back());
+
+			if (d < dis)
+			{
+				dis = d;
+				min_i = i;
+			}
+		}
+		if (min_i != -1)
+		{
+			//std::cout << d << std::endl;
+			ordered_rect.push_back(rect[min_i]);
+			rect.erase(rect.begin() + min_i);
+		}
+	}
+	rect = ordered_rect;
+	rect_size = { get_distance(rect[1],rect[0]),get_distance(rect[1],rect[2]) };
 }
 
 void PinDetection::order_rect_points(std::vector<cv::Point2i>& rect)
@@ -140,7 +286,7 @@ void PinDetection::order_rect_points(std::vector<cv::Point2i>& rect)
 		}
 		if (min_i != -1)
 		{
-			std::cout << d << std::endl;
+			//std::cout << d << std::endl;
 			ordered_rect.push_back(rect[min_i]);
 			rect.erase(rect.begin() + min_i);
 		}
@@ -185,7 +331,7 @@ bool PinDetection::is_parallel_and_same_direction(const cv::Point2f & v1, const 
 		r2 = 0;
 	}
 
-	std::cout << r1 << " " << r2 << std::endl;
+	//std::cout << r1 << " " << r2 << std::endl;
 	
 	if (v1.x * v2.x + v1.y * v2.y > 0)
 	{
@@ -205,8 +351,10 @@ bool PinDetection::is_parallel_and_same_direction(const cv::Point2f & v1, const 
 	return true;
 }
 
-void PinDetection::collect_pixels_in_min_box(cv::Rect2i & max_rect, float min_box_width, float min_box_height, std::vector<std::vector<float>> & minbox_line_func, std::vector<cv::Point2i>& points)
+void PinDetection::collect_pixels_in_min_box(cv::Rect2f & max_rect, float min_box_width, float min_box_height, std::vector<std::vector<float>> & minbox_line_func, std::vector<cv::Point2i>& points)
 {
+	max_rect = cv::Rect2i(max_rect);
+
 	cv::Point2i tmp;
 	float dis[4] = {0}, dis_sum = 0.0;
 
@@ -223,7 +371,7 @@ void PinDetection::collect_pixels_in_min_box(cv::Rect2i & max_rect, float min_bo
 				dis[i] = get_distance_point_to_line(tmp, minbox_line_func[i][0], minbox_line_func[i][1], minbox_line_func[i][2]);
 				dis_sum += dis[i];
 			}
-			if (abs(dis_sum - (min_box_height + min_box_width)) < 5)
+			if (abs(dis_sum - (min_box_height + min_box_width)) < 2)
 			{ 
 				points.push_back(cv::Point2i(x, y));
 			}
@@ -231,7 +379,7 @@ void PinDetection::collect_pixels_in_min_box(cv::Rect2i & max_rect, float min_bo
 	}
 }
 
-void PinDetection::get_max_box_rect(std::vector<cv::Point2i>& _points_vec, cv::Rect2i & max_rect)
+void PinDetection::get_max_box_rect(std::vector<cv::Point2i>& _points_vec, cv::Rect2f & max_rect)
 {
 	std::vector<int> x_vec, y_vec;
 
@@ -249,4 +397,72 @@ void PinDetection::get_max_box_rect(std::vector<cv::Point2i>& _points_vec, cv::R
 	max_rect = cv::Rect2i(
 		cv::Point2i(*min_max_x.first, *min_max_y.first),
 		cv::Point2i(*min_max_x.second, *min_max_y.second));
+}
+
+void PinDetection::get_line_segment_from_points(std::vector<cv::Point2i>& points, std::vector<std::vector<float>>& line_segments)
+{
+	line_segments.resize(4);
+
+	float
+		A = 0.0, B = 0.0, C = 0.0,
+		x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0;
+	
+	for (int i = 0; i < 4; i++)
+	{
+		x1 = points[i].x;
+		y1 = points[i].y;
+
+		x2 = points[(i + 1) % 4].x;
+		y2 = points[(i + 1) % 4].y;
+
+		A = y2 - y1;
+		B = x1 - x2;
+		C = x2 * y1 - x1 * y2;
+
+		line_segments[i] = std::vector<float>{ A, B, C };
+	}
+}
+
+void PinDetection::detecte_middle_part(cv::Mat &img, std::vector<cv::Point2i>& middle_part_points, float probability, bool & is_positive, cv::Point2i & direction)
+{
+	std::vector<cv::Point2i> valid_points_vec;
+
+	for (int i = 0; i < middle_part_points.size(); ++i)
+	{
+		cv::Vec3b & c = img.at<cv::Vec3b>(middle_part_points[i]);
+		if (sqrt((c[0] - 255)*(c[0] - 255) + (c[1] - 255)*(c[1] - 255) + (c[2] - 255)*(c[2] - 255)) < 100 )
+		{
+			valid_points_vec.push_back(middle_part_points[i]);
+		}
+	}
+
+	std::cout << valid_points_vec.size() / (float)middle_part_points.size() << std::endl;
+
+	if (valid_points_vec.size() / (float)middle_part_points.size() > probability)
+	{
+		is_positive = true;
+	}
+	else
+	{
+		is_positive = false;
+
+		auto mean_p = cv::mean(valid_points_vec);
+
+		direction = { cv::Point2i(mean_p.val[0], mean_p.val[1]) };
+	}
+}
+
+void PinDetection::detecte_both_side(cv::Mat & img, std::vector<cv::Point2i>& side, float & is_opening_probability)
+{
+	int valid_count = 0;
+
+	for (int i = 0; i < side.size(); ++i)
+	{
+		cv::Vec3b & c = img.at<cv::Vec3b>(side[i]);
+		if (sqrt((c[0] - 255)*(c[0] - 255) + (c[1] - 255)*(c[1] - 255) + (c[2] - 255)*(c[2] - 255)) < 100)
+		{
+			valid_count++;
+		}
+	}
+	is_opening_probability = valid_count / (float)side.size();
 }

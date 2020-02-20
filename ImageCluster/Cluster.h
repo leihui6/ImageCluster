@@ -16,8 +16,6 @@ public:
 
 	void get_min_box_size(float & _width, float & _height);
 
-	void get_min_box_line_segment_function(std::vector<std::vector<float>>& _line_segment);
-
 	void get_middle_points_of_lines(std::vector<cv::Point2i>& _m_min_box_middle_p);
 
 	void get_center_point(cv::Point2i & _p);
@@ -45,13 +43,6 @@ private:
 
 	//! the middle points of min box's 4 lines
 	std::vector<cv::Point2i> m_min_box_middle_p;
-
-	//! 4 line segment of min box
-	/*
-	So the size of min_box_line_vec should be 4.
-	each of them represented by A,B,C, so the size of element should be 3.
-	*/
-	std::vector<std::vector<float>> m_min_box_line_vec;
 
 	float m_angle;
 };

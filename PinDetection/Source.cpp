@@ -188,8 +188,6 @@ int main()
 
 	ImageCluster image_cluster;
 	
-	PinDetection pin_detection;
-
 	clock_t begin_time = clock();
 
 	image_cluster.load_image(img_bin.data,img_bin.cols,img_bin.rows);
@@ -243,6 +241,8 @@ int main()
 
 		PinDetectionResult pin_detection_result;
 
+		PinDetection pin_detection;
+
 		pin_detection.detect(img, total_clusters[i], pin_detection_result);
 		
 		std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
@@ -265,7 +265,7 @@ int main()
 		cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
 
 		// draw the serial number of cluster
-		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(255));
+		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(0));
 	}
 
 	cv::imshow("cluster_image", cluster_image);

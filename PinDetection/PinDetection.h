@@ -43,10 +43,17 @@ private:
 	//! Building line_segment using ordered points
 	void get_line_segment_from_points(std::vector<cv::Point2i> & points, std::vector<std::vector<float>> & line_segments);
 
-	void detecte_middle_part(cv::Mat &img, std::vector<cv::Point2i> & middle_part_points, float probability, bool & is_positive, cv::Point2i & direction);
+	void get_line_segment_from_points(std::vector<cv::Point2i> & points, std::vector<float> & line_segment);
+
+	void detecte_middle_part(cv::Mat &img, std::vector<cv::Point2i> & needle_line_points, float probability, bool & is_positive, cv::Point2i & direction);
 
 	void detecte_both_side(cv::Mat &img, std::vector<cv::Point2i> & side, float & is_opening_probability);
 
+	void get_grasp_position(cv::Mat &img, std::vector<cv::Point2i> & side_1, std::vector<cv::Point2i> & side_2, std::vector<cv::Point2i> & grasp_position);
+
+	void get_is_has_needle(cv::Mat &img, std::vector<cv::Point2i> &line_points, std::vector<cv::Point2i> & middle_region_points, bool & is_has_needle);
+
+	bool is_needle(cv::Vec3b & c, float threshold = 300);
 private:
 
 	// This is a region of side.
@@ -55,5 +62,19 @@ private:
 
 	std::vector<cv::Point2i> m_pixels_in_min_box;
 
+	/*
+	m_min_rect[2]-----m_min_rect[3]
+	     |                 |
+	     1                 2
+	     |                 |
+	     3                 0
+	     |                 |
+	m_min_rect[1]-----m_min_rect[0]
+	*/
+	std::vector<cv::Point2i> m_min_rect;
+
+	std::vector<cv::Point2i> m_inner_p;
+
+	std::vector <std::vector<cv::Point2i>> m_inner_part_points;
 };
 

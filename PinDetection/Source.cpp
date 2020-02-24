@@ -3,9 +3,9 @@
 
 #define _MAIN_DEBUG_
 
-#define _LOCAL_DEBUG_
+//#define _LOCAL_DEBUG_
 
-//#define _ONLINE_DEBUG_
+#define _ONLINE_DEBUG_
 
 using namespace cv;
 
@@ -21,7 +21,7 @@ int main()
 
 	//cap.open(0);
 
-	cap.open("sample/special_test.mp4");
+	cap.open("sample/special_test2.mp4");
 
 	if (!cap.isOpened())
 	{
@@ -49,7 +49,7 @@ int main()
 			return 0;
 		}
 
-		background_removal(frame, img_removed_bg, 255, 0, 0, 250.0);
+		background_removal(frame, img_removed_bg, 0, 0, 0, 255);
 
 		cv::cvtColor(img_removed_bg, img_bin, COLOR_RGB2GRAY);
 
@@ -77,7 +77,8 @@ int main()
 
 		image_cluster.get_clusters(total_clusters);
 
-		cv::Point2i p1, p2, cp;
+		cv::Point2i cp;
+		cv::Rect2i max_rect;
 
 		float angle = 0.0;
 
@@ -97,7 +98,7 @@ int main()
 
 			total_clusters[i].get_middle_points_of_lines(middle_points_of_lines);
 
-			total_clusters[i].get_max_box(p1, p2);
+			total_clusters[i].get_max_box(max_rect);
 
 			total_clusters[i].get_center_point(cp);
 
@@ -111,7 +112,21 @@ int main()
 			//	color[1] = 255;
 			//	color[2] = 255;
 			//}
+			PinDetectionResult pin_detection_result;
 
+			PinDetection pin_detection;
+
+			pin_detection.detect(frame, total_clusters[i], pin_detection_result);
+
+			for (auto &i : pin_detection_result.opening_position)
+			{
+				cv::circle(cluster_image, i, 4, cv::Scalar(255, 0, 255), -1);
+			}
+
+			for (auto &i : pin_detection_result.fixing_position)
+			{
+				cv::circle(cluster_image, i, 4, cv::Scalar(0, 0, 255), -1);
+			}
 			for (int j = 0; j < 4; ++j)
 			{
 				// draw the minimum box of cluster
@@ -122,16 +137,20 @@ int main()
 			}
 
 			// draw the maximum box of cluster
-			cv::rectangle(cluster_image, cv::Rect(p1, p2), cv::Scalar::all(255), 1);
+			cv::rectangle(cluster_image, max_rect, cv::Scalar::all(255), 1);
 
 			// draw the center point of cluster
 			cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
 
 			// draw the serial number of cluster
-			cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
+			//cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
 
 			// put the fps on screen
 			cv::putText(cluster_image, "FPS:"+std::to_string((int(1000/(end_time-begin_time)))), cv::Point2i(0,20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
+
+			cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
+
+			cv::putText(cluster_image, ((pin_detection_result.pin_status == POSITIVE) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
 		}
 
 		cv::imshow("original image", frame);
@@ -153,10 +172,7 @@ int main()
 
 #ifdef _LOCAL_DEBUG_
 
-	cv::Mat img = cv::imread("sample/photo4.jpg");
-
-	//Mat background = imread("sample/background.jpg");
-	//img = img - background;
+	cv::Mat img = cv::imread("sample/photo5.jpg");
 
 	if (!img.data)
 	{
@@ -164,13 +180,13 @@ int main()
 		return -1;
 	}
 
-	cv::resize(img, img, cv::Size(480, 640));
+	cv::resize(img, img, cv::Size(720, 960));
 
 	Mat img_removed_bg(cv::Size(img.cols, img.rows), CV_8UC3);
 
 	Mat img_bin(cv::Size(img.cols, img.rows), CV_8UC1);
 
-	background_removal(img, img_removed_bg, 255, 0, 0, 300);
+	background_removal(img, img_removed_bg, 0, 0, 0, 250);
 
 	std::cout << "width=" << img_removed_bg.cols << " height=" << img_removed_bg.rows << std::endl;
 	
@@ -237,15 +253,21 @@ int main()
 
 		total_clusters[i].get_middle_points_of_lines(middle_points_of_lines);
 
-		begin_time = clock();
-
 		PinDetectionResult pin_detection_result;
 
 		PinDetection pin_detection;
 
 		pin_detection.detect(img, total_clusters[i], pin_detection_result);
 		
-		std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
+		for (auto &i : pin_detection_result.opening_position)
+		{
+			cv::circle(cluster_image, i, 4, cv::Scalar(255, 0, 255), -1);
+		}
+
+		for (auto &i : pin_detection_result.fixing_position)
+		{
+			cv::circle(cluster_image, i, 4, cv::Scalar(0, 0, 255), -1);
+		}
 
 		for (int j = 0; j < 4; ++j)
 		{
@@ -265,7 +287,11 @@ int main()
 		cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
 
 		// draw the serial number of cluster
-		cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(0));
+		//cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(0));
+
+		cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
+		
+		cv::putText(cluster_image, ((pin_detection_result.pin_status == POSITIVE) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
 	}
 
 	cv::imshow("cluster_image", cluster_image);

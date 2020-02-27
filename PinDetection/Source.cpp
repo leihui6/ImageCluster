@@ -3,9 +3,9 @@
 
 #define _MAIN_DEBUG_
 
-//#define _LOCAL_DEBUG_
+#define _LOCAL_DEBUG_
 
-#define _ONLINE_DEBUG_
+//#define _ONLINE_DEBUG_
 
 using namespace cv;
 
@@ -118,15 +118,16 @@ int main()
 
 			pin_detection.detect(frame, total_clusters[i], pin_detection_result);
 
-			for (auto &i : pin_detection_result.opening_position)
-			{
-				cv::circle(cluster_image, i, 4, cv::Scalar(255, 0, 255), -1);
-			}
+			cv::circle(cluster_image, pin_detection_result.opening_position, 4, cv::Scalar(255, 0, 255), -1);
 
-			for (auto &i : pin_detection_result.fixing_position)
-			{
-				cv::circle(cluster_image, i, 4, cv::Scalar(0, 0, 255), -1);
-			}
+			cv::circle(cluster_image, pin_detection_result.closing_position, 4, cv::Scalar(0, 0, 255), -1);
+
+			cv::circle(cluster_image, pin_detection_result.point_on_base_side, 5, cv::Scalar(255, 0, 0), -1);
+
+			cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
+
+			cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
+
 			for (int j = 0; j < 4; ++j)
 			{
 				// draw the minimum box of cluster
@@ -148,9 +149,6 @@ int main()
 			// put the fps on screen
 			cv::putText(cluster_image, "FPS:"+std::to_string((int(1000/(end_time-begin_time)))), cv::Point2i(0,20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
 
-			cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
-
-			cv::putText(cluster_image, ((pin_detection_result.pin_status == POSITIVE) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
 		}
 
 		cv::imshow("original image", frame);
@@ -258,16 +256,16 @@ int main()
 		PinDetection pin_detection;
 
 		pin_detection.detect(img, total_clusters[i], pin_detection_result);
-		
-		for (auto &i : pin_detection_result.opening_position)
-		{
-			cv::circle(cluster_image, i, 4, cv::Scalar(255, 0, 255), -1);
-		}
 
-		for (auto &i : pin_detection_result.fixing_position)
-		{
-			cv::circle(cluster_image, i, 4, cv::Scalar(0, 0, 255), -1);
-		}
+		cv::circle(cluster_image, pin_detection_result.opening_position, 4, cv::Scalar(255, 0, 255), -1);
+
+		cv::circle(cluster_image, pin_detection_result.closing_position, 4, cv::Scalar(0, 0, 255), -1);
+
+		cv::circle(cluster_image, pin_detection_result.point_on_base_side, 5, cv::Scalar(255, 0, 0), -1);
+
+		cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
+
+		cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
 
 		for (int j = 0; j < 4; ++j)
 		{
@@ -285,13 +283,6 @@ int main()
 
 		// draw the center point of cluster
 		cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
-
-		// draw the serial number of cluster
-		//cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(0));
-
-		cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
-		
-		cv::putText(cluster_image, ((pin_detection_result.pin_status == POSITIVE) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
 	}
 
 	cv::imshow("cluster_image", cluster_image);

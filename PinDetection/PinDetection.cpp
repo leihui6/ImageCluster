@@ -94,26 +94,24 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 	
 	if (middle_is_positive)
 	{
-		pin_detection_result.pin_status = POSITIVE;
+		pin_detection_result.pin_status = FACEUP;
 	}
 	else
 	{
-		pin_detection_result.pin_status = BESIDE;
+		pin_detection_result.pin_status = FACESIDE;
 	}
-
-	std::vector<cv::Point2i> grasp_position;
-
-	cv::Point2i orientation_point;
 
 	// This needle is not positive.
 	if (!middle_is_positive)
 	{
-		detect_middle_orientation(image, m_inner_part_points[1], m_inner_p[0], m_inner_p[2], m_inner_p[1], m_inner_p[3], orientation_point);
-
-		get_grasp_position(image, m_inner_part_points[0], m_inner_part_points[2], grasp_position, false);
-
 		// in this case, has or doesnt has needle doesnt matter.
 		pin_detection_result.is_has_needle = false;
+		
+		detect_middle_orientation(image, m_inner_part_points[1], m_inner_p[0], m_inner_p[2], m_inner_p[1], m_inner_p[3], pin_detection_result.point_on_base_side);
+
+		pin_detection_result.rotate_direction = pin_detection_result.point_on_base_side - pin_detection_result.ceter_position;
+		
+		//cv::circle(image, orientation_point, 2, cv::Scalar(0, 0, 0), -1);
 	}
 	
 	// this needle is positive, and we need to detecte the opening side.
@@ -125,128 +123,19 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 
 		get_is_has_needle(image, is_has_needle, needle_p[0], needle_p[1]);
 
+		get_grasp_position(image, m_inner_part_points[0], m_inner_part_points[2], pin_detection_result.opening_position, pin_detection_result.closing_position);
+
 		if (is_has_needle)
 		{
 			pin_detection_result.is_has_needle = true;
 
-			get_grasp_position(image, m_inner_part_points[0], m_inner_part_points[2], grasp_position, true);
-
-			cv::line(image, needle_p[0], needle_p[1], cv::Scalar::all(0), 2);
+			//cv::line(image, needle_p[0], needle_p[1], cv::Scalar::all(0), 2);
 		}
 		else
 		{
 			pin_detection_result.is_has_needle = false;
-
-			get_grasp_position(image, m_inner_part_points[0], m_inner_part_points[2], grasp_position, false);
 		}
 	}
-
-	pin_detection_result.opening_position = { grasp_position[0], grasp_position[1] };
-	
-	pin_detection_result.fixing_position = { grasp_position[2], grasp_position[3] };
-
-	pin_detection_result.rotate_direction = orientation_point - pin_detection_result.ceter_position;
-
-	cv::circle(image, orientation_point, 2, cv::Scalar(0, 0, 0), -1);
-
-	//cv::imshow("test1", image);
-
-	//cv::waitKey(0);
-	/*
-	for (int i = 0; i < 4; i++)
-	{
-		cv::circle(image, inner_p[i], 2, cv::Scalar(255, 0, 0), 1);
-		cv::circle(image, min_rect[i], 2, cv::Scalar(255, 0, 0), 1);
-	}
-
-	cv::imshow("test",image);
-	cv::waitKey(0);
-
-	collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segments, both_side[0]);
-
-	collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segments, both_side[1]);
-
-	collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segments, middle_side);
-	*/
-	//collect_pixels_in_min_box(max_rect, min_rect_width, min_rect_height, line_segments, points_in_min_box);
-	//for (auto & i: points_in_min_box)
-	//{
-	//	auto & color = image.at<cv::Vec3b>(i);
-	//	color[0] = 255;
-	//	color[1] = 255;
-	//	color[2] = 255;
-	//}
-	//cv::imshow("test",image);
-	//cv::waitKey(0);
-	/*
-	cv::Point2i p_a, p_b, p_0;
-	p_a = (min_rect[0] + min_rect[1]) / 2;
-	p_b = (min_rect[2] + min_rect[3]) / 2;
-	p_0 = (min_rect[0] + min_rect[1] + min_rect[2] + min_rect[3]) / 4;
-	
-	float d = 0.0;
-	std::cout << get_distance(min_rect[1], min_rect[2]) << std::endl;
-	std::cout << get_distance(min_rect[0], min_rect[3]) << std::endl;
-
-	// distance to figure out where is opening side.
-	d = ((get_distance(min_rect[1], min_rect[2]) + get_distance(min_rect[0], min_rect[3])) / 2.0f) * (1 / 5.0f) * (1 / 2.0f);
-
-	cv::Point2i detection_p[5], dir_line;
-	dir_line = cv::Point2i(p_0.x - p_a.x, p_0.y - p_a.y);
-
-	float move_d = d;
-	for (int i = 0; i < 5; ++i)
-	{
-		if (i == 0)
-		{
-			move_d = d;
-		}
-		else
-		{
-			move_d = 2 * d + move_d;
-		}
-		get_point_along_with_distance(p_a, move_d, detection_p[i], dir_line);
-	}
-	*/
-	/*for (int y = pin_region.y; y < pin_region.y + pin_region.height; ++y)
-	{
-		for (int x = pin_region.x; x < pin_region.x + pin_region.width; ++x)
-		{
-			cv::Point2i p = cv::Point2i(x, y);
-
-			if (get_distance(p, new_p_a) < d)
-			{
-				m_p_a_circle.push_back(p);
-			}
-			else if (get_distance(p, new_p_b) < d)
-			{
-				m_p_b_circle.push_back(p);
-			}
-		}
-	}*/
-	//identify_side();
-	/*
-	cv::circle(image, p_0, d, cv::Scalar(255, 0, 0), 1);
-	cv::circle(image, p_a, 2, cv::Scalar(255, 0, 0), 1);
-	cv::circle(image, p_b, 2, cv::Scalar(255, 0, 0), 1);
-
-	for (int i = 0; i < 5; ++i)
-	{
-		cv::circle(image, detection_p[i], d, cv::Scalar(255, 0, 0), 1);
-	}
-
-	//for (auto i : m_p_a_circle)
-	//{
-	//	//blue green red
-	//	cv::Vec3b &color = image.at<cv::Vec3b>(i);
-
-	//	color[0] = 255;
-	//	color[1] = 255;
-	//	color[2] = 255;
-	//}
-	cv::imshow("test", image);
-	cv::waitKey(0);
-	*/
 }
 
 float PinDetection::get_distance(cv::Point2i pointO, cv::Point2i pointA)
@@ -551,40 +440,30 @@ void PinDetection::detecte_both_side(cv::Mat & img, std::vector<cv::Point2i>& si
 	is_opening_probability = valid_count / (float)side.size();
 }
 
-void PinDetection::get_grasp_position(cv::Mat & img, std::vector<cv::Point2i>& side_1, std::vector<cv::Point2i>& side_2, std::vector<cv::Point2i>& grasp_position, bool is_positive)
+void PinDetection::get_grasp_position(cv::Mat & img, std::vector<cv::Point2i>& side_1, std::vector<cv::Point2i>& side_2, cv::Point2i & opening_position, cv::Point2i & closing_position)
 {
+	// points probability close to white color
 	float pro_1 = 0.0, pro_2 = 0.0;
 
-	if (is_positive)
-	{
-		detecte_both_side(img, side_1, pro_1);
+	detecte_both_side(img, side_1, pro_1);
 
-		detecte_both_side(img, side_2, pro_2);
-	}
+	detecte_both_side(img, side_2, pro_2);
+	auto
+		mean_point_1 = cv::mean(side_1),
 
-	grasp_position.resize(4);
+		mean_point_2 = cv::mean(side_2);
 
 	if (pro_1 > pro_2)
 	{
-		// opening side
-		grasp_position[0] = (m_min_rect[0] + m_inner_p[0]) / 2;
+		opening_position = cv::Point2i(mean_point_1[0], mean_point_1[1]);
 
-		grasp_position[1] = (m_min_rect[1] + m_inner_p[1]) / 2;
-
-		// fixing side
-		grasp_position[2] = (m_min_rect[3] + m_inner_p[2]) / 2;
-
-		grasp_position[3] = (m_min_rect[2] + m_inner_p[3]) / 2;
+		closing_position = cv::Point2i(mean_point_2[0], mean_point_2[1]);
 	}
 	else
 	{
-		grasp_position[0] = (m_min_rect[2] + m_inner_p[3]) / 2;
+		closing_position = cv::Point2i(mean_point_1[0], mean_point_1[1]);
 
-		grasp_position[1] = (m_min_rect[3] + m_inner_p[2]) / 2;
-
-		grasp_position[2] = (m_min_rect[0] + m_inner_p[0]) / 2;
-
-		grasp_position[3] = (m_min_rect[1] + m_inner_p[1]) / 2;
+		opening_position = cv::Point2i(mean_point_2[0], mean_point_2[1]);
 	}
 }
 

@@ -3,23 +3,26 @@
 
 enum PinStatus
 {
-	POSITIVE,
-	BESIDE
+	FACEUP,
+	FACESIDE,
+	OVERLAPPing
 };
 
 struct PinDetectionResult
 {
 	PinStatus pin_status;
 
+	// face up
 	bool is_has_needle;
+	cv::Point2i opening_position;
+	cv::Point2i closing_position;
 
-	std::vector<cv::Point2i> opening_position;
-
-	std::vector<cv::Point2i> fixing_position;
-
-	cv::Point2i ceter_position;
-
+	// face side
 	cv::Point2i rotate_direction;
+	cv::Point2i point_on_base_side;
+
+	// overlapping
+	cv::Point2i ceter_position;
 };
 
 class PinDetection
@@ -61,7 +64,7 @@ private:
 
 	void detecte_both_side(cv::Mat &img, std::vector<cv::Point2i> & side, float & is_opening_probability);
 
-	void get_grasp_position(cv::Mat &img, std::vector<cv::Point2i> & side_1, std::vector<cv::Point2i> & side_2, std::vector<cv::Point2i> & grasp_position, bool is_positive);
+	void get_grasp_position(cv::Mat & img, std::vector<cv::Point2i>& side_1, std::vector<cv::Point2i>& side_2, cv::Point2i & opening_position, cv::Point2i & closing_position);
 
 	void get_is_has_needle(cv::Mat & img, bool & is_has_needle, cv::Point2i & needle_p_0, cv::Point2i & needle_p_1);
 

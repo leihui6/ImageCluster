@@ -113,28 +113,20 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 		
 		//cv::circle(image, orientation_point, 2, cv::Scalar(0, 0, 0), -1);
 	}
-	
 	// this needle is positive, and we need to detecte the opening side.
-	if (middle_is_positive)
+	else
 	{
-		bool is_has_needle = true;
-
 		cv::Point2i needle_p[2];
 
-		get_is_has_needle(image, is_has_needle, needle_p[0], needle_p[1]);
+		get_is_has_needle(image, pin_detection_result.is_has_needle, needle_p[0], needle_p[1]);
 
 		get_grasp_position(image, m_inner_part_points[0], m_inner_part_points[2], pin_detection_result.opening_position, pin_detection_result.closing_position);
 
-		if (is_has_needle)
-		{
-			pin_detection_result.is_has_needle = true;
-
-			//cv::line(image, needle_p[0], needle_p[1], cv::Scalar::all(0), 2);
-		}
-		else
-		{
-			pin_detection_result.is_has_needle = false;
-		}
+		//cv::line(image, needle_p[0], needle_p[1], cv::Scalar::all(0), 2);
+		
+		//cv::imshow("test", image);
+		
+		//cv::waitKey(0);
 	}
 }
 

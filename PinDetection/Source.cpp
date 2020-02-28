@@ -124,7 +124,7 @@ int main()
 
 			cv::circle(cluster_image, pin_detection_result.point_on_base_side, 5, cv::Scalar(255, 0, 0), -1);
 
-			cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
+			cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), pin_detection_result.ceter_position, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
 
 			cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
 
@@ -263,26 +263,31 @@ int main()
 
 		cv::circle(cluster_image, pin_detection_result.point_on_base_side, 5, cv::Scalar(255, 0, 0), -1);
 
-		cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
+		cv::circle(cluster_image, pin_detection_result.ceter_position, 3, cv::Scalar::all(0), -1);
 
 		cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
-
-		for (int j = 0; j < 4; ++j)
+		
+		if (pin_detection_result.pin_status == FACEUP)
 		{
-			// draw the minimum box of cluster
-			line(cluster_image, min_box_rect[j], min_box_rect[(j + 1) % 4], cv::Scalar(255, 0, 0));
-
-			// draw the middle points of lines(minimum box)
-			cv::circle(cluster_image, middle_points_of_lines[j], 5, cv::Scalar(0, 0, 255));
+			cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), pin_detection_result.ceter_position, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255), 2);
 		}
 
-		total_clusters[i].get_center_point(cp);
+		//for (int j = 0; j < 4; ++j)
+		//{
+		//	// draw the minimum box of cluster
+		//	line(cluster_image, min_box_rect[j], min_box_rect[(j + 1) % 4], cv::Scalar(255, 0, 0));
+
+		//	// draw the middle points of lines(minimum box)
+		//	cv::circle(cluster_image, middle_points_of_lines[j], 5, cv::Scalar(0, 0, 255));
+		//}
+
+		//total_clusters[i].get_center_point(cp);
 
 		// draw the maximum box of cluster
-		cv::rectangle(cluster_image, max_rect, cv::Scalar(0, 255, 0), 1);
+		//cv::rectangle(cluster_image, max_rect, cv::Scalar(0, 255, 0), 1);
 
 		// draw the center point of cluster
-		cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
+		//cv::circle(cluster_image, cp, 3, cv::Scalar::all(0), -1);
 	}
 
 	cv::imshow("cluster_image", cluster_image);

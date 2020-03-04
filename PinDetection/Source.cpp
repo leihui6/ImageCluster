@@ -21,7 +21,7 @@ int main()
 
 	//cap.open(0);
 
-	cap.open("sample/special_test2.mp4");
+	cap.open("sample/special_test.mp4");
 
 	if (!cap.isOpened())
 	{
@@ -32,7 +32,7 @@ int main()
 	
 	cap >> frame;
 
-	VideoWriter demo_video("./demo.mp4", VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, frame.size(), true);
+	VideoWriter demo_video("./sample/demo.mp4", VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, frame.size(), true);
 
 	Mat img_bin, img_removed_bg;
 
@@ -48,6 +48,10 @@ int main()
 		{
 			return 0;
 		}
+
+		PinDetection pin_detection;
+
+		pin_detection.find_ROI(frame, frame);
 
 		background_removal(frame, img_removed_bg, 0, 0, 0, 255);
 
@@ -114,8 +118,6 @@ int main()
 			//}
 			PinDetectionResult pin_detection_result;
 
-			PinDetection pin_detection;
-
 			pin_detection.detect(frame, total_clusters[i], pin_detection_result);
 
 			if (pin_detection_result.pin_status == FACEUP)
@@ -134,6 +136,8 @@ int main()
 			}
 
 			cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
+
+			pin_detection.clear();
 
 			//for (int j = 0; j < 4; ++j)
 			//{
@@ -166,7 +170,7 @@ int main()
 
 		demo_video << cluster_image;
 
-		cv::waitKey(33);
+		cv::waitKey(1);
 
 		image_cluster.clear();
 	}
@@ -177,7 +181,7 @@ int main()
 
 #ifdef _LOCAL_DEBUG_
 
-	cv::Mat img = cv::imread("sample/photo5.jpg");
+	cv::Mat img = cv::imread("sample/tmp.jpg");
 
 	if (!img.data)
 	{
@@ -185,7 +189,11 @@ int main()
 		return -1;
 	}
 
-	cv::resize(img, img, cv::Size(720, 960));
+	PinDetection pin_detection;
+	
+	pin_detection.find_ROI(img, img);
+
+	cv::resize(img, img, cv::Size(480, 680));
 
 	Mat img_removed_bg(cv::Size(img.cols, img.rows), CV_8UC3);
 
@@ -260,8 +268,6 @@ int main()
 
 		PinDetectionResult pin_detection_result;
 
-		PinDetection pin_detection;
-
 		pin_detection.detect(img, total_clusters[i], pin_detection_result);
 
 		if (pin_detection_result.pin_status == FACEUP)
@@ -280,6 +286,8 @@ int main()
 		}
 
 		cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
+
+		pin_detection.clear();
 
 		//for (int j = 0; j < 4; ++j)
 		//{

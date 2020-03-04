@@ -1,6 +1,8 @@
 #pragma once
 #include "../ImageCluster/ImageCluster.h"
 
+#include <opencv2/aruco.hpp>
+
 enum PinStatus
 {
 	FACEUP,
@@ -33,7 +35,11 @@ public:
 
 	~PinDetection();
 
+	void find_ROI(cv::Mat &image, cv::Mat &res);
+
 	void detect(cv::Mat & image, Cluster & _cluster, PinDetectionResult & pin_detection_result);
+
+	void clear();
 
 private:
 
@@ -73,6 +79,8 @@ private:
 	void detect_middle_orientation(cv::Mat &img, std::vector<cv::Point2i>& middle_part_points, cv::Point2i &line_0_0, cv::Point2i &line_0_1, cv::Point2i &line_1_0, cv::Point2i &line_1_1, cv::Point2i & orientation_point, float threshold = 100);
 
 	inline void rgb_to_gray(cv::Vec3b &c, int &g);
+	
+	void get_min_max_point_in_vector(std::vector<cv::Point2i> &points, cv::Point2i & min_p, cv::Point2i & max_p);
 
 private:
 

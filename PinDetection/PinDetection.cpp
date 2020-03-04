@@ -17,6 +17,71 @@ PinDetection::~PinDetection()
 {
 }
 
+void PinDetection::find_ROI(cv::Mat & image, cv::Mat & res)
+{
+	cv::Mat gray;
+
+	if (image.type() == CV_8UC1)
+	{
+		gray = image;
+	}
+	else
+	{
+		cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+	}
+	std::vector<int> markerIds;
+	std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
+
+	cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
+
+	cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+
+	cv::aruco::detectMarkers(image, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+
+	/*
+	float mean_r = 0.0, total_r = 0.0;
+
+	for (size_t i = 0; i < circles.size(); i++)
+	{
+		cv::Vec3i c = circles[i];
+
+		circle_points.push_back(cv::Point(c[0], c[1]));
+
+		total_r += c[2];
+	}
+	mean_r = total_r / circles.size();
+
+	if (circle_points.size() == 3)
+	{
+		order_rect_points(circle_points);
+	}
+	else
+	{
+		std::cerr << "[detection of ROI: there are more marked points(" << circle_points.size() << ")]" << std::endl;
+
+		return;
+	}
+
+	cv::Point2i min_p, max_p;
+	
+	get_min_max_point_in_vector(circle_points, min_p, max_p);
+
+	min_p.x += mean_r;
+	min_p.y += mean_r;
+
+	max_p.x -= mean_r;
+	max_p.y -= mean_r;
+
+	res = image(cv::Rect2i(min_p, max_p));
+
+	std::cout << "min_p=" << min_p << " max_p=" << max_p << std::endl;
+
+	cv::imshow("test", res);
+
+	cv::waitKey(0);
+	*/
+}
+
 void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult & pin_detection_result)
 {
 	_cluster.get_min_box(m_min_rect);
@@ -128,6 +193,30 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 		
 		//cv::waitKey(0);
 	}
+}
+
+void PinDetection::clear()
+{
+	m_p_a_circle.clear();
+
+	m_p_b_circle.clear();
+
+	m_pixels_in_min_box.clear();
+
+	/*
+	m_min_rect[2]-----m_min_rect[3]
+		 |                 |
+		 1                 2
+		 |                 |
+		 3                 0
+		 |                 |
+	m_min_rect[1]-----m_min_rect[0]
+	*/
+	m_min_rect.clear();
+
+	m_inner_p.clear();
+
+	m_inner_part_points.clear();
 }
 
 float PinDetection::get_distance(cv::Point2i pointO, cv::Point2i pointA)
@@ -619,4 +708,40 @@ void PinDetection::detect_middle_orientation(cv::Mat & img, std::vector<cv::Poin
 inline void PinDetection::rgb_to_gray(cv::Vec3b & c, int & g)
 {
 	g = 0.21*c[2] + 0.72*c[1] + 0.07*c[0];
+}
+
+void PinDetection::get_min_max_point_in_vector(std::vector<cv::Point2i>& points, cv::Point2i & min_p, cv::Point2i & max_p)
+{
+	int min_x = INT_MAX, min_y= INT_MAX;
+
+	int max_x = INT_MIN, max_y = INT_MIN;
+
+	for (int i = 0; i < points.size(); ++i)
+	{
+		int t_x = points[i].x,
+			t_y = points[i].y;
+
+		if (t_x < min_x)
+		{
+			min_x = t_x;
+		}
+		if (t_y < min_y)
+		{
+			min_y = t_y;
+		}
+
+		if (t_x > max_x)
+		{
+			max_x = t_x;
+		}
+		if (t_y > max_y)
+		{
+			max_y = t_y;
+		}
+	}
+	min_p.x = min_x;
+	min_p.y = min_y;
+
+	max_p.x = max_x;
+	max_p.y = max_y;
 }

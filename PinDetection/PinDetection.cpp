@@ -10,7 +10,7 @@ PinDetection::PinDetection()
 
 	m_is_middle_positive_probaility = 0.75f;
 
-	m_is_needle_threshold = 180;
+	m_is_needle_threshold = 23;
 }
 
 PinDetection::~PinDetection()
@@ -29,48 +29,61 @@ void PinDetection::find_ROI(cv::Mat & image, cv::Mat & res)
 	{
 		cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 	}
+
+	cv::medianBlur(gray, gray, 5);
+
 	std::vector<int> markerIds;
+
 	std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
+
+	std::vector<cv::Point2i> corner_points(4);
 
 	cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
 
-	cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+	cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_ARUCO_ORIGINAL);
 
 	cv::aruco::detectMarkers(image, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
 
-	/*
-	float mean_r = 0.0, total_r = 0.0;
-
-	for (size_t i = 0; i < circles.size(); i++)
+	if (markerCorners.size() != 4)
 	{
-		cv::Vec3i c = circles[i];
-
-		circle_points.push_back(cv::Point(c[0], c[1]));
-
-		total_r += c[2];
-	}
-	mean_r = total_r / circles.size();
-
-	if (circle_points.size() == 3)
-	{
-		order_rect_points(circle_points);
-	}
-	else
-	{
-		std::cerr << "[detection of ROI: there are more marked points(" << circle_points.size() << ")]" << std::endl;
-
 		return;
 	}
 
+	for (size_t i = 0; i < markerCorners.size(); i++)
+	{
+		std::vector<cv::Point2f> &c = markerCorners[i];
+
+		if (markerIds[i] == 1)
+		{
+			corner_points[i] = c[2];
+		}
+		else if (markerIds[i] == 2)
+		{
+			corner_points[i] = c[3];
+		}
+		else if (markerIds[i] == 3)
+		{
+			corner_points[i] = c[1];
+		}
+		else if (markerIds[i] == 4)
+		{
+			corner_points[i] = c[0];
+		}
+	}
+
+	order_rect_points(corner_points);
+
 	cv::Point2i min_p, max_p;
 	
-	get_min_max_point_in_vector(circle_points, min_p, max_p);
+	get_min_max_point_in_vector(corner_points, min_p, max_p);
 
-	min_p.x += mean_r;
-	min_p.y += mean_r;
+	float inner_distance = 10;
 
-	max_p.x -= mean_r;
-	max_p.y -= mean_r;
+	min_p.x += inner_distance;
+	min_p.y += inner_distance;
+
+	max_p.x -= inner_distance;
+	max_p.y -= inner_distance;
 
 	res = image(cv::Rect2i(min_p, max_p));
 
@@ -78,8 +91,7 @@ void PinDetection::find_ROI(cv::Mat & image, cv::Mat & res)
 
 	cv::imshow("test", res);
 
-	cv::waitKey(0);
-	*/
+	//cv::waitKey(0);
 }
 
 void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult & pin_detection_result)
@@ -183,7 +195,7 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 	{
 		cv::Point2i needle_p[2];
 
-		get_is_has_needle(image, pin_detection_result.is_has_needle, needle_p[0], needle_p[1]);
+		get_if_has_needle(image, pin_detection_result.is_has_needle, needle_p[0], needle_p[1]);
 
 		get_grasp_position(image, m_inner_part_points[0], m_inner_part_points[2], pin_detection_result.opening_position, pin_detection_result.closing_position);
 
@@ -548,7 +560,7 @@ void PinDetection::get_grasp_position(cv::Mat & img, std::vector<cv::Point2i>& s
 	}
 }
 
-void PinDetection::get_is_has_needle(cv::Mat & img, bool & is_has_needle, cv::Point2i & needle_p_0, cv::Point2i & needle_p_1)
+void PinDetection::get_if_has_needle(cv::Mat & img, bool & is_has_needle, cv::Point2i & needle_p_0, cv::Point2i & needle_p_1)
 {
 	/*
 	0 --.--.--.--.--[.]--> 1(skip the last point)
@@ -598,6 +610,8 @@ void PinDetection::get_is_has_needle(cv::Mat & img, bool & is_has_needle, cv::Po
 
 	int min_i = 0, min_j = 0;
 
+	std::vector<float> line_value_vec;
+
 	for (int i = 0; i < base_point_size - 1; ++i)
 	{
 		for (int j = 0; j < base_point_size - 1; ++j)
@@ -624,12 +638,25 @@ void PinDetection::get_is_has_needle(cv::Mat & img, bool & is_has_needle, cv::Po
 				min_i = i;
 				min_j = j;
 			}
+
+			line_value_vec.push_back(line_value);
 		}
 	}
 	
-	std::cout << "min_line_value=" << min_line_value <<std::endl;
+	std::sort(line_value_vec.begin(), line_value_vec.end());
 
-	if (min_line_value < m_is_needle_threshold)
+	if (line_value_vec.size() < 2)
+	{
+		line_value_vec.push_back(0);
+	}
+
+	float sum_value = std::accumulate(line_value_vec.begin() + 1, line_value_vec.end(), 0);
+
+	float mean_needle_value = sum_value / (line_value_vec.size() - 1);
+
+	std::cout << "abs(min_line_value - mean_needle_value)=" << abs(min_line_value - mean_needle_value) <<std::endl;
+
+	if (abs(min_line_value - mean_needle_value) > m_is_needle_threshold)
 	{
 		is_has_needle = true;
 

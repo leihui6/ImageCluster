@@ -3,9 +3,9 @@
 
 #define _MAIN_DEBUG_
 
-#define _LOCAL_DEBUG_
+//#define _LOCAL_DEBUG_
 
-//#define _ONLINE_DEBUG_
+#define _ONLINE_DEBUG_
 
 using namespace cv;
 
@@ -44,6 +44,10 @@ int main()
 
 		cap >> frame;
 
+		//cv::blur(frame, frame, cv::Size(3, 3));
+
+		//cv::medianBlur(frame, frame, 5);
+
 		if (frame.empty())
 		{
 			return 0;
@@ -63,7 +67,7 @@ int main()
 
 		image_cluster.load_image(img_bin.data, img_bin.cols, img_bin.rows);
 
-		image_cluster.init_kernel_size(8, 12);
+		image_cluster.init_kernel_size(3, 3);
 
 		image_cluster.cluster(20);
 
@@ -158,7 +162,7 @@ int main()
 			//cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
 
 			// put the fps on screen
-			cv::putText(cluster_image, "FPS:"+std::to_string((int(1000/(end_time-begin_time)))), cv::Point2i(0,20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
+			cv::putText(cluster_image, "FPS:"+std::to_string((int(1000/(end_time-begin_time)))), cv::Point2i(0,20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255));
 
 		}
 

@@ -1,6 +1,8 @@
 #pragma once
 #include "../ImageCluster/ImageCluster.h"
 
+#include <algorithm>
+#include <numeric>
 #include <opencv2/aruco.hpp>
 
 enum PinStatus
@@ -72,7 +74,7 @@ private:
 
 	void get_grasp_position(cv::Mat & img, std::vector<cv::Point2i>& side_1, std::vector<cv::Point2i>& side_2, cv::Point2i & opening_position, cv::Point2i & closing_position);
 
-	void get_is_has_needle(cv::Mat & img, bool & is_has_needle, cv::Point2i & needle_p_0, cv::Point2i & needle_p_1);
+	void get_if_has_needle(cv::Mat & img, bool & is_has_needle, cv::Point2i & needle_p_0, cv::Point2i & needle_p_1);
 
 	bool is_needle(cv::Vec3b & c, float threshold = 300);
 

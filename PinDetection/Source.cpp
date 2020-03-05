@@ -32,7 +32,9 @@ int main()
 	
 	cap >> frame;
 
-	VideoWriter demo_video("./sample/demo.mp4", VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, frame.size(), true);
+	cv::resize(frame, frame, cv::Size(480, 640));
+
+	//VideoWriter demo_video("./sample/demo.mp4", VideoWriter::fourcc('M', 'J', 'P', 'G'), 30, frame.size(), true);
 
 	Mat img_bin, img_removed_bg;
 
@@ -44,6 +46,8 @@ int main()
 
 		cap >> frame;
 
+		
+
 		//cv::blur(frame, frame, cv::Size(3, 3));
 
 		//cv::medianBlur(frame, frame, 5);
@@ -52,6 +56,8 @@ int main()
 		{
 			return 0;
 		}
+
+		cv::imshow("original image", frame);
 
 		PinDetection pin_detection;
 
@@ -166,13 +172,11 @@ int main()
 
 		}
 
-		cv::imshow("original image", frame);
-
 		cv::imshow("gray image", img_bin);
 
 		cv::imshow("cluster_image", cluster_image);
 
-		demo_video << cluster_image;
+		//demo_video << cluster_image;
 
 		cv::waitKey(1);
 

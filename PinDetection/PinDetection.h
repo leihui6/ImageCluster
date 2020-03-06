@@ -37,7 +37,14 @@ public:
 
 	~PinDetection();
 
-	void find_ROI(cv::Mat &image, cv::Mat &res);
+	// find region of interesting in image
+	/*
+	\param[in] image input image
+	\param[out] result ROI image
+
+	return value is the marker points in this image.
+	*/
+	int find_ROI(cv::Mat &image, cv::Mat &res);
 
 	void detect(cv::Mat & image, Cluster & _cluster, PinDetectionResult & pin_detection_result);
 

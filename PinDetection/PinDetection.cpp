@@ -17,7 +17,7 @@ PinDetection::~PinDetection()
 {
 }
 
-void PinDetection::find_ROI(cv::Mat & image, cv::Mat & res)
+int PinDetection::find_ROI(cv::Mat & image, cv::Mat & res)
 {
 	cv::Mat gray;
 
@@ -46,7 +46,7 @@ void PinDetection::find_ROI(cv::Mat & image, cv::Mat & res)
 
 	if (markerCorners.size() != 4)
 	{
-		return;
+		return markerCorners.size();
 	}
 
 	for (size_t i = 0; i < markerCorners.size(); i++)
@@ -89,9 +89,10 @@ void PinDetection::find_ROI(cv::Mat & image, cv::Mat & res)
 
 	std::cout << "min_p=" << min_p << " max_p=" << max_p << std::endl;
 
-	cv::imshow("test", res);
+	//cv::imshow("test", res);
 
 	//cv::waitKey(0);
+	return markerCorners.size();
 }
 
 void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult & pin_detection_result)

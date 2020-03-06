@@ -46,8 +46,6 @@ int main()
 
 		cap >> frame;
 
-		
-
 		//cv::blur(frame, frame, cv::Size(3, 3));
 
 		//cv::medianBlur(frame, frame, 5);
@@ -61,7 +59,10 @@ int main()
 
 		PinDetection pin_detection;
 
-		pin_detection.find_ROI(frame, frame);
+		if (4 != pin_detection.find_ROI(frame, frame))
+		{
+			continue;
+		}
 
 		background_removal(frame, img_removed_bg, 0, 0, 0, 255);
 
@@ -172,13 +173,13 @@ int main()
 
 		}
 
-		cv::imshow("gray image", img_bin);
+		//cv::imshow("gray image", img_bin);
 
 		cv::imshow("cluster_image", cluster_image);
 
 		//demo_video << cluster_image;
 
-		cv::waitKey(1);
+		cv::waitKey(33);
 
 		image_cluster.clear();
 	}

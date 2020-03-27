@@ -42,15 +42,20 @@ public:
 	\param[in] image input image
 	\param[out] result ROI image
 
-	return value is the marker points in this image.
+	returned value is the marker points in this image.
 	*/
 	int find_ROI(cv::Mat &image, cv::Mat &res);
 
 	void detect(cv::Mat & image, Cluster & _cluster, PinDetectionResult & pin_detection_result);
 
+	// including pre-process image and image cluster
+	void process_image(cv::Mat & img, std::vector<Cluster> &total_clusters);
+
 	void clear();
 
 private:
+
+	void background_removal(cv::Mat & _img, cv::Mat & _res_img, int gray_value,/*int _r, int _g, int _b,*/ float _threshold);
 
 	float get_distance(cv::Point2i pointO, cv::Point2i pointA);
 
@@ -92,6 +97,8 @@ private:
 	void get_min_max_point_in_vector(std::vector<cv::Point2i> &points, cv::Point2i & min_p, cv::Point2i & max_p);
 
 private:
+
+	ImageCluster m_image_cluster;
 
 	// This is a region of side.
 	// to judge where is opening side and fixing side. 

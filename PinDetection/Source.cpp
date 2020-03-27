@@ -11,7 +11,6 @@ using namespace cv;
 
 using namespace std;
 
-void background_removal(cv::Mat & _img, cv::Mat & _res_img,int _r, int _g, int _b, float _threshold);
 
 int main()
 {
@@ -42,7 +41,7 @@ int main()
 
 	while (cap.isOpened())
 	{
-		clock_t begin_time = clock();
+		clock_t begin_time_cluster = clock();
 
 		cap >> frame;
 
@@ -64,33 +63,17 @@ int main()
 			continue;
 		}
 
-		background_removal(frame, img_removed_bg, 0, 0, 0, 255);
+		std::vector<Cluster> total_clusters;
 
-		cv::cvtColor(img_removed_bg, img_bin, COLOR_RGB2GRAY);
+		pin_detection.process_image(frame, total_clusters);
 
-		cv::threshold(img_bin, img_bin, 125, 255, cv::THRESH_OTSU);
-
-		cv::bitwise_not(img_bin, img_bin);
-
-		image_cluster.load_image(img_bin.data, img_bin.cols, img_bin.rows);
-
-		image_cluster.init_kernel_size(3, 3);
-
-		image_cluster.cluster(20);
-
-		clock_t end_time = clock();
-
-		//std::cout << "execution time:" << (double)(end_time - begin_time) << "ms" << std::endl;
+		clock_t end_time_cluster = clock();
 
 		cv::Mat cluster_image;
 
 		frame.copyTo(cluster_image);
 
 		std::vector<cv::Point2i> cluster_pixels, min_box_rect, middle_points_of_lines;;
-
-		std::vector<Cluster> total_clusters;
-
-		image_cluster.get_clusters(total_clusters);
 
 		cv::Point2i cp;
 		cv::Rect2i max_rect;
@@ -129,7 +112,11 @@ int main()
 			//}
 			PinDetectionResult pin_detection_result;
 
+			clock_t begin_time_pin = clock();
+
 			pin_detection.detect(frame, total_clusters[i], pin_detection_result);
+
+			clock_t end_time_pin = clock();
 
 			if (pin_detection_result.pin_status == FACEUP)
 			{
@@ -169,8 +156,13 @@ int main()
 			//cv::putText(cluster_image, std::to_string(i), cp, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(0));
 
 			// put the fps on screen
-			cv::putText(cluster_image, "FPS:"+std::to_string((int(1000/(end_time-begin_time)))), cv::Point2i(0,20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255));
+			cv::putText(cluster_image,
+				"FPS:" + std::to_string((int(1000 / (end_time_cluster - begin_time_cluster)))),
+				cv::Point2i(0, 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255));
 
+			cv::putText(cluster_image,
+				"FPS:" + std::to_string((int(1000.0 / (end_time_pin - begin_time_pin)))),
+				cv::Point2i(0, 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255));
 		}
 
 		//cv::imshow("gray image", img_bin);
@@ -190,7 +182,7 @@ int main()
 
 #ifdef _LOCAL_DEBUG_
 
-	cv::Mat img = cv::imread("sample/tmp.jpg");
+	cv::Mat img = cv::imread("sample/photo5.jpg");
 
 	if (!img.data)
 	{
@@ -204,49 +196,19 @@ int main()
 
 	cv::resize(img, img, cv::Size(480, 680));
 
-	Mat img_removed_bg(cv::Size(img.cols, img.rows), CV_8UC3);
-
-	Mat img_bin(cv::Size(img.cols, img.rows), CV_8UC1);
-
-	background_removal(img, img_removed_bg, 0, 0, 0, 250);
-
-	std::cout << "width=" << img_removed_bg.cols << " height=" << img_removed_bg.rows << std::endl;
-	
-	cv::cvtColor(img_removed_bg, img_bin, COLOR_RGB2GRAY);
-
-	cv::imshow("original image", img);
-
-	cv::imshow("gray image", img_bin);
-
-	cv::threshold(img_bin, img_bin, 125, 255, cv::THRESH_OTSU);
-
-	cv::bitwise_not(img_bin, img_bin);
-
-	cv::imshow("threshold image", img_bin);
-
-	ImageCluster image_cluster;
-	
-	clock_t begin_time = clock();
-
-	image_cluster.load_image(img_bin.data,img_bin.cols,img_bin.rows);
-
-	image_cluster.init_kernel_size(3, 3);
-
-	image_cluster.cluster(30);
-
-	std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
-
 	cv::Mat cluster_image;
 
+	// for showing result
 	img.copyTo(cluster_image);
-
-	std::vector<cv::Point2i> cluster_pixels, min_box_rect, middle_points_of_lines;;
 
 	std::vector<Cluster> total_clusters;
 
-	image_cluster.get_clusters(total_clusters);
+	pin_detection.process_image(img, total_clusters);
+
+	std::vector<cv::Point2i> cluster_pixels, min_box_rect, middle_points_of_lines;;
 
 	cv::Point2i cp;
+	
 	cv::Rect2i max_rect;
 
 	float angle = 0.0;
@@ -264,9 +226,8 @@ int main()
 	// get every cluster from total_cluster
 	for (int i = 0; i < total_clusters.size(); ++i)
 	{
-		total_clusters[i].get_cluster_pixels(cluster_pixels);
-
 		//cv::Mat img_cluster;
+		//total_clusters[i].get_cluster_pixels(cluster_pixels);
 		//get_image_from_specific_indices(img_cluster, cluster_pixels, img);
 
 		total_clusters[i].get_min_box(min_box_rect);
@@ -325,40 +286,3 @@ int main()
 
 	return 0;
 }
-
-void background_removal(cv::Mat & _img, cv::Mat & _res_img, int _r, int _g, int _b, float _threshold)
-{
-	int r = 0, g = 0, b = 0;
-
-	_res_img.create(cv::Size(_img.cols, _img.rows), CV_8UC3);
-
-	for (int y = 0; y < _img.rows; ++y)
-	{
-		for (int x = 0; x < _img.cols; ++x)
-		{
-			cv::Vec3b & c = _img.at<cv::Vec3b>(y, x);
-
-			cv::Vec3b & c2 = _res_img.at<cv::Vec3b>(y, x);
-
-			b = c[0];
-			g = c[1];
-			r = c[2];
-			
-			//cout << (sqrt((b - _b)*(b - _b) + (_g - g)*(_g - g) + (_r - r)*(_r - r))) <<endl;
-			
-			if ((sqrt((b - _b)*(b - _b) + (_g - g)*(_g - g) + (_r - r)*(_r - r))) < (_threshold))
-			{
-				c2[0] = 255;
-				c2[1] = 255;
-				c2[2] = 255;
-			}
-			else
-			{
-				c2[0] = 0;
-				c2[1] = 0;
-				c2[2] = 0;
-			}
-		}
-	}
-}
-

@@ -208,6 +208,32 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 	}
 }
 
+void PinDetection::process_image(cv::Mat & img, std::vector<Cluster> &total_clusters)
+{
+	cv::Mat img_bin(cv::Size(img.cols, img.rows), CV_8UC1);
+	cv::cvtColor(img, img_bin, cv::COLOR_RGB2GRAY);
+
+	//cv::imshow("gray image", img_bin);
+	//cv::waitKey(0);
+
+	cv::threshold(img_bin, img_bin, 125, 255, cv::THRESH_OTSU);
+
+	//cv::imshow("original image", img_bin);
+	//cv::waitKey(0);
+
+	clock_t begin_time = clock();
+
+	m_image_cluster.load_image(img_bin.data, img_bin.cols, img_bin.rows);
+
+	m_image_cluster.init_kernel_size(3, 3);
+
+	m_image_cluster.cluster(30);
+
+	std::cout << "execution time:" << (double)(clock() - begin_time) << "ms" << std::endl;
+
+	m_image_cluster.get_clusters(total_clusters);
+}
+
 void PinDetection::clear()
 {
 	m_p_a_circle.clear();
@@ -230,6 +256,55 @@ void PinDetection::clear()
 	m_inner_p.clear();
 
 	m_inner_part_points.clear();
+}
+
+void PinDetection::background_removal(cv::Mat & _img, cv::Mat & _res_img, int _gray_value,/*int _r, int _g, int _b*/ float _threshold)
+{
+	int r = 0, g = 0, b = 0;
+
+	_res_img.create(cv::Size(_img.cols, _img.rows), _img.type());
+
+	for (int y = 0; y < _img.rows; ++y)
+	{
+		for (int x = 0; x < _img.cols; ++x)
+		{
+			uchar & gv = _img.at<uchar>(y, x);
+
+			std::cout << abs((int)gv - _gray_value) << std::endl;
+
+			if (abs((int)gv - _gray_value) < _threshold)
+			{
+				gv = 0;
+			}
+			else
+			{
+				gv = 255;
+			}
+
+			//cv::Vec3b & c = _img.at<cv::Vec3b>(y, x);
+
+			//cv::Vec3b & c2 = _res_img.at<cv::Vec3b>(y, x);
+
+			//b = c[0];
+			//g = c[1];
+			//r = c[2];
+
+			////cout << (sqrt((b - _b)*(b - _b) + (_g - g)*(_g - g) + (_r - r)*(_r - r))) <<endl;
+
+			//if ((sqrt((b - _b)*(b - _b) + (_g - g)*(_g - g) + (_r - r)*(_r - r))) < (_threshold))
+			//{
+			//	c2[0] = 0;
+			//	c2[1] = 0;
+			//	c2[2] = 0;
+			//}
+			//else
+			//{
+			//	c2[0] = 255;
+			//	c2[1] = 255;
+			//	c2[2] = 255;
+			//}
+		}
+	}
 }
 
 float PinDetection::get_distance(cv::Point2i pointO, cv::Point2i pointA)

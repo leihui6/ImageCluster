@@ -6,6 +6,11 @@ ImageCluster::ImageCluster()
 
 }
 
+ImageCluster::ImageCluster(size_t width, size_t height)
+{
+	m_image_data = new unsigned char[width * height + 1]();
+}
+
 ImageCluster::~ImageCluster()
 {
 	delete_pointer(&m_image_data);
@@ -17,8 +22,12 @@ int ImageCluster::load_image(unsigned char * _image, int _width, int _height)
 	{
 		return 1;
 	}
-	m_image_data = new unsigned char[_width * _height + 1]();
 
+	if (!m_image_data)
+	{
+		m_image_data = new unsigned char[_width * _height + 1]();
+	}
+	
 	memcpy(m_image_data, _image, _width * _height);
 	
 	m_width		= _width;

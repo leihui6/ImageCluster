@@ -11,6 +11,8 @@ class ImageCluster
 {
 public:
 	ImageCluster();
+
+	ImageCluster(size_t width, size_t height);
 	
 	~ImageCluster();
 

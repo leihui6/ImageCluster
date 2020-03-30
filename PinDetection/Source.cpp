@@ -37,7 +37,7 @@ int main()
 
 	Mat img_bin, img_removed_bg;
 
-	ImageCluster image_cluster;
+	ImageCluster image_cluster(480, 640);
 
 	while (cap.isOpened())
 	{

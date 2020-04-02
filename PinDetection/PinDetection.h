@@ -21,9 +21,9 @@ struct PinDetectionResult
 	cv::Point2i opening_position;
 	cv::Point2i closing_position;
 
-	// face side
-	cv::Point2i rotate_direction;
-	cv::Point2i point_on_base_side;
+	// face side, rotation derection from begin to end
+	cv::Point2i rotate_direction_begin;
+	cv::Point2i rotate_direction_end;
 
 	// overlapping
 	cv::Point2i ceter_position;
@@ -90,7 +90,8 @@ private:
 
 	bool is_needle(cv::Vec3b & c, float threshold = 300);
 
-	void detect_middle_orientation(cv::Mat &img, std::vector<cv::Point2i>& middle_part_points, cv::Point2i &line_0_0, cv::Point2i &line_0_1, cv::Point2i &line_1_0, cv::Point2i &line_1_1, cv::Point2i & orientation_point, float threshold = 100);
+	void detect_middle_orientation(cv::Mat &img, std::vector<cv::Point2i>& middle_part_points, cv::Point2i &line_0_0, cv::Point2i &line_0_1, cv::Point2i &line_1_0, cv::Point2i &line_1_1,
+		cv::Point2i & orientation_point_begin, cv::Point2i & orientation_point_end, float threshold = 100);
 
 	inline void rgb_to_gray(cv::Vec3b &c, int &g);
 	

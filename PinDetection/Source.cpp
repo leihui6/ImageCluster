@@ -3,9 +3,9 @@
 
 #define _MAIN_DEBUG_
 
-//#define _LOCAL_DEBUG_
+#define _LOCAL_DEBUG_
 
-#define _ONLINE_DEBUG_
+//#define _ONLINE_DEBUG_
 
 using namespace cv;
 
@@ -246,16 +246,18 @@ int main()
 
 			cv::circle(cluster_image, pin_detection_result.closing_position, 4, cv::Scalar(0, 0, 255), -1);
 
-			cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), pin_detection_result.ceter_position, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
+			//cv::putText(cluster_image, ((pin_detection_result.is_has_needle == true) ? std::to_string(i) + " YES" : std::to_string(i) + " NO"), pin_detection_result.ceter_position, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
 		}
 		else if (pin_detection_result.pin_status == FACESIDE)
 		{
-			cv::circle(cluster_image, pin_detection_result.ceter_position, 5, cv::Scalar::all(0), -1);
+			//cv::circle(cluster_image, pin_detection_result.ceter_position, 5, cv::Scalar::all(0), -1);
 
-			cv::circle(cluster_image, pin_detection_result.point_on_base_side, 5, cv::Scalar(255, 0, 0), -1);
+			//cv::circle(cluster_image, pin_detection_result.point_on_base_side, 5, cv::Scalar(255, 0, 0), -1);
+
+			cv::arrowedLine(cluster_image, pin_detection_result.rotate_direction_begin, pin_detection_result.rotate_direction_end, cv::Scalar(0, 255, 255), 2);
 		}
 
-		cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
+		//cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));
 
 		pin_detection.clear();
 

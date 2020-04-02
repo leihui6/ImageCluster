@@ -185,9 +185,11 @@ void PinDetection::detect(cv::Mat & image, Cluster& _cluster, PinDetectionResult
 		// in this case, has or doesnt has needle doesnt matter.
 		pin_detection_result.is_has_needle = false;
 		
-		detect_middle_orientation(image, m_inner_part_points[1], m_inner_p[0], m_inner_p[2], m_inner_p[1], m_inner_p[3], pin_detection_result.point_on_base_side);
+		detect_middle_orientation(image, m_inner_part_points[1], m_inner_p[0], m_inner_p[2], m_inner_p[1], m_inner_p[3],
+			pin_detection_result.rotate_direction_begin,
+			pin_detection_result.rotate_direction_end);
 
-		pin_detection_result.rotate_direction = pin_detection_result.point_on_base_side - pin_detection_result.ceter_position;
+		//pin_detection_result.rotate_direction = pin_detection_result.point_on_base_side - pin_detection_result.ceter_position;
 		
 		//cv::circle(image, orientation_point, 2, cv::Scalar(0, 0, 0), -1);
 	}
@@ -758,7 +760,8 @@ bool PinDetection::is_needle(cv::Vec3b & c, float threshold)
 	}
 }
 
-void PinDetection::detect_middle_orientation(cv::Mat & img, std::vector<cv::Point2i>& middle_part_points, cv::Point2i & line_0_0, cv::Point2i & line_0_1, cv::Point2i & line_1_0, cv::Point2i & line_1_1, cv::Point2i & orientation_point, float threshold)
+void PinDetection::detect_middle_orientation(cv::Mat & img, std::vector<cv::Point2i>& middle_part_points, cv::Point2i & line_0_0, cv::Point2i & line_0_1, cv::Point2i & line_1_0, cv::Point2i & line_1_1, 
+	cv::Point2i & orientation_point_begin, cv::Point2i & orientation_point_end, float threshold)
 {
 	std::vector<float> line_segment_0, line_segment_1;
 
@@ -800,11 +803,13 @@ void PinDetection::detect_middle_orientation(cv::Mat & img, std::vector<cv::Poin
 	}
 	if (valid_count[0] > valid_count[1])
 	{
-		orientation_point = (line_0_0 + line_0_1) / 2;
+		orientation_point_begin = (line_1_0 + line_1_1) / 2;
+		orientation_point_end = (line_0_0 + line_0_1) / 2;
 	}
 	else
 	{
-		orientation_point = (line_1_0 + line_1_1) / 2;
+		orientation_point_begin = (line_0_0 + line_0_1) / 2;
+		orientation_point_end = (line_1_0 + line_1_1) / 2;
 	}
 }
 

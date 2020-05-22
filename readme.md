@@ -4,7 +4,7 @@ Cluster algorithm for 2d image based on Region Growing algorithm.
 
 # Application
 
-- PinDetection
+- [PinDetection](./application/PinDetection/readme.md)
 
 # Contribution
 When adding ImageCluster into your project, please use the `./ImageCluster`.

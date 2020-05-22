@@ -1,11 +1,11 @@
-#include "../ImageCluster/ImageCluster.h"
+#include "../../ImageCluster/ImageCluster.h"
 #include "PinDetection.h"
 
 #define _MAIN_DEBUG_
 
-#define _LOCAL_DEBUG_
+//#define _LOCAL_DEBUG_
 
-//#define _ONLINE_DEBUG_
+#define _ONLINE_DEBUG_
 
 using namespace cv;
 
@@ -20,7 +20,7 @@ int main()
 
 	//cap.open(0);
 
-	cap.open("sample/special_test.mp4");
+	cap.open("../sample/special_test.mp4");
 
 	if (!cap.isOpened())
 	{
@@ -130,7 +130,7 @@ int main()
 			{
 				cv::circle(cluster_image, pin_detection_result.ceter_position, 5, cv::Scalar::all(0), -1);
 
-				cv::circle(cluster_image, pin_detection_result.point_on_base_side, 5, cv::Scalar(255, 0, 0), -1);
+				//cv::circle(cluster_image, pin_detection_result.point_on_base_side, 5, cv::Scalar(255, 0, 0), -1);
 			}
 
 			cv::putText(cluster_image, ((pin_detection_result.pin_status == FACEUP) ? "FACEUP" : "FACESIDE"), cv::Point2i(max_rect.x, max_rect.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 0));

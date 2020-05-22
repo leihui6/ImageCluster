@@ -1,5 +1,5 @@
 #pragma once
-#include "../ImageCluster/ImageCluster.h"
+#include "../../ImageCluster/ImageCluster.h"
 
 #include <algorithm>
 #include <numeric>

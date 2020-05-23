@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(pin_detection_pkg)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -136,7 +136,14 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_publisher_node src/image_publisher.cpp)
-add_executable(${PROJECT_NAME}_subscriber_node src/image_subscriber.cpp)
+
+add_executable(${PROJECT_NAME}_subscriber_node 
+  src/image_subscriber.cpp
+  src/PinDetection.cpp
+  src/ImageCluster/ImageCluster.cpp
+  src/ImageCluster/Cluster.cpp
+)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -150,12 +157,13 @@ add_executable(${PROJECT_NAME}_subscriber_node src/image_subscriber.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(
-  ${PROJECT_NAME}_subscriber_node
+  ${PROJECT_NAME}_publisher_node
   ${catkin_LIBRARIES}
 )
 target_link_libraries(
-  ${PROJECT_NAME}_publisher_node
+  ${PROJECT_NAME}_subscriber_node
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 

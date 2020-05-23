@@ -24,6 +24,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 application/PinDetection/build
+ImageCluster/build
 
 
 # Visual Studio 2015 cache/options directory

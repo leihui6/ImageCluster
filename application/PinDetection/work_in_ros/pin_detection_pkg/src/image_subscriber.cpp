@@ -1,9 +1,10 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include "pin_detection_pkg/pin_detection_result.h"
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <cv_bridge/cv_bridge.h>
-
 
 #include "ImageCluster/ImageCluster.h"
 #include "PinDetection.h"
@@ -11,19 +12,21 @@
 using std::cout;
 using std::endl;
 
-
 void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 {
     try
     {
+        pin_detection_pkg::pin_detection_result pdr;
+
         //cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
         //cv::waitKey(30);
         ROS_INFO("Got a image");
         cv::Mat img = cv_bridge::toCvShare(msg, "bgr8")->image;
+
         if (!img.data)
         {
             cout << "Could not open or find the image" << std::endl;
-            return ;
+            return;
         }
 
         PinDetection pin_detection;
@@ -74,14 +77,28 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
             if (pin_detection_result.pin_status == FACEUP)
             {
+                pdr.pin_status = 0;
+
                 cv::circle(cluster_image, pin_detection_result.opening_position, 4, cv::Scalar(255, 0, 255), -1);
 
                 cv::circle(cluster_image, pin_detection_result.closing_position, 4, cv::Scalar(0, 0, 255), -1);
 
+                pdr.opening_position.x = pin_detection_result.opening_position.x;
+                pdr.opening_position.y = pin_detection_result.opening_position.y;
+
+                pdr.closing_position.x = pin_detection_result.closing_position.x;
+                pdr.closing_position.y = pin_detection_result.closing_position.y;
             }
             else if (pin_detection_result.pin_status == FACESIDE)
             {
                 cv::arrowedLine(cluster_image, pin_detection_result.rotate_direction_begin, pin_detection_result.rotate_direction_end, cv::Scalar(0, 255, 255), 2);
+
+                pdr.pin_status = 1;
+                pdr.rotate_direction_begin.x = pin_detection_result.rotate_direction_begin.x;
+                pdr.rotate_direction_begin.y = pin_detection_result.rotate_direction_begin.y;
+
+                pdr.rotate_direction_end.x = pin_detection_result.rotate_direction_end.x;
+                pdr.rotate_direction_end.y = pin_detection_result.rotate_direction_end.y;
             }
             pin_detection.clear();
         }
@@ -89,6 +106,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
         cv::imshow("cluster_image", cluster_image);
 
         cv::waitKey(33);
+
+        cout << "following are the result of detection: " << endl << pdr << endl;
     }
     catch (cv_bridge::Exception &e)
     {
@@ -98,10 +117,10 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "image_listener");
+    ros::init(argc, argv, "image_subscriber");
     ros::NodeHandle nh;
-    //cv::namedWindow("view");
-    //cv::startWindowThread();
+    cv::namedWindow("view");
+    cv::startWindowThread();
     image_transport::ImageTransport it(nh);
     image_transport::Subscriber sub = it.subscribe("camera/image", 1, imageCallback);
     ros::spin();

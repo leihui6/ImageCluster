@@ -1,0 +1,9 @@
+int32 pin_status
+std_msgs/Bool is_has_needle
+geometry_msgs/Point opening_position
+geometry_msgs/Point closing_position
+
+geometry_msgs/Point rotate_direction_begin
+geometry_msgs/Point rotate_direction_end
+
+geometry_msgs/Point ceter_position

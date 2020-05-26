@@ -10,13 +10,18 @@ $rosrun pin_detection_pkg pin_detection_pkg_subscriber_node
 
 ## Message type
 
-from `msg/pin_detection_result.msg`:
+from `msg/pin_detection_unit.msg`:
 
 ```
+# 0: face up 1: face side
+int32 pin_status
+
+# For face up
 std_msgs/Bool is_has_needle
 geometry_msgs/Point opening_position
 geometry_msgs/Point closing_position
 
+# For face side
 geometry_msgs/Point rotate_direction_begin
 geometry_msgs/Point rotate_direction_end
 

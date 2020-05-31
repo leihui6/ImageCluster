@@ -19,7 +19,6 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
     try
     {
         pin_detection_pkg::pin_detection_result pdr;
-        pin_detection_pkg::pin_detection_unit pdr_unit;
 
         //cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
         //cv::waitKey(30);
@@ -68,6 +67,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
         // get every cluster from total_cluster
         for (int i = 0; i < total_clusters.size(); ++i)
         {
+            pin_detection_pkg::pin_detection_unit pdr_unit;
+
             total_clusters[i].get_min_box(min_box_rect);
 
             total_clusters[i].get_max_box(max_rect);
@@ -104,6 +105,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
                 pdr_unit.rotate_direction_end.y = pin_detection_result.rotate_direction_end.y;
             }
             pin_detection.clear();
+
             pdr.pin_detection_result.push_back(pdr_unit);
             //cout << "following are the result of detection: " << endl << pdr_unit << endl;
         }

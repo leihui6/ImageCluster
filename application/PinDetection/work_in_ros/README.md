@@ -6,6 +6,7 @@ please follow these command to test this package
 $roscore
 $rosrun pin_detection_pkg pin_detection_pkg_publisher_node xxx.jpg
 $rosrun pin_detection_pkg pin_detection_pkg_subscriber_node
+$rostopic echo /pin_detection_result
 ```
 
 ## Message type

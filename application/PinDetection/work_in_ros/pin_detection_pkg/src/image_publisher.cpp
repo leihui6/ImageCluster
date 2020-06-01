@@ -8,6 +8,12 @@
 
 int main(int argc, char **argv)
 {
+    if(argc != 2)
+    {
+        std::cerr << "please add one image file like *image_publisher_node image.jpg" <<std::endl;
+        return -1;
+    }
+
     ros::init(argc, argv, "image_publisher");
 
     ros::NodeHandle nh;
@@ -29,7 +35,9 @@ int main(int argc, char **argv)
     while (nh.ok())
     {
         std::cout << "please input enter to continue:" << std::endl;
+
         std::cin >> foo;
+
         if (foo == "q")
         {
             break;

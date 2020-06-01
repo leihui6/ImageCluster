@@ -112,9 +112,9 @@ void imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
         pin_detection_result.publish(pdr);
 
-        //cv::imshow("view", cluster_image);
-
-        //cv::waitKey(33);
+        cv::imshow("view", cluster_image);
+        cv::waitKey();
+        std::cout << "[WARNING]DO NOT CLOSE \"VIEW\" WINDOW FORCELY" << std::endl;
     }
     catch (cv_bridge::Exception &e)
     {
